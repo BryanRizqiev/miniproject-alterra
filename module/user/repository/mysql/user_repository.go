@@ -4,6 +4,7 @@ import (
 	"miniproject-alterra/app/lib"
 	user_entity "miniproject-alterra/module/user/entity"
 	user_model "miniproject-alterra/module/user/repository/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -34,14 +35,22 @@ func (*UserRepository) GetAllUser() ([]user_entity.UserDTO, error) {
 
 func (this *UserRepository) InsertUser(userDTO user_entity.UserDTO) error {
 
+	testTime := time.Time{}
+
 	user := user_model.User{
-		Email:    userDTO.Email,
-		Name:     userDTO.Name,
-		Password: userDTO.Password,
-		Address:  lib.NewNullString(userDTO.Address),
+		ID:              lib.NewUuid(),
+		Name:            userDTO.Name,
+		Email:           userDTO.Email,
+		Password:        userDTO.Password,
+		DOB:             lib.NewNullString(userDTO.DOB),
+		Phone:           lib.NewNullString(userDTO.Phone),
+		Address:         lib.NewNullString(userDTO.Address),
+		VerifiedEmailAt: lib.NewNullTime(testTime),
 	}
 
-	if tx := this.db.Create(&user); tx.Error != nil {
+	tx := this.db.Omit("role", "request_verified").Create(&user)
+
+	if tx.Error != nil {
 		return tx.Error
 	}
 

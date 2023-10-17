@@ -8,8 +8,15 @@ import (
 type User struct {
 	*lib.Base
 
-	Email    string `gorm:"uniqueIndex"`
-	Name     string
-	Password string
-	Address  sql.NullString
+	ID              string `gorm:"type:string;primary_key;size:36;default:uuid();column:id"`
+	Name            string
+	Email           string
+	Password        string
+	Address         sql.NullString
+	DOB             sql.NullString `gorm:"column:dob"`
+	Phone           sql.NullString
+	VerifiedEmailAt sql.NullTime
+	Role            sql.NullString
+	RequestVerified sql.NullString
+	CreatedAt       sql.NullTime
 }

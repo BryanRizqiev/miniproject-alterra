@@ -37,6 +37,9 @@ func (this *UserService) Register(userDTO user_entity.UserDTO) error {
 		Email:    userDTO.Email,
 		Name:     userDTO.Name,
 		Password: encryptedPassword,
+		DOB:      userDTO.DOB,
+		Address:  userDTO.Address,
+		Phone:    userDTO.Phone,
 	}
 
 	if err := this.userRepository.InsertUser(newUserDTO); err != nil {

@@ -1,11 +1,19 @@
 package user_entity
 
+import "time"
+
 type UserDTO struct {
-	ID       string
-	Email    string
-	Name     string
-	Password string
-	Address  string
+	ID              string
+	Name            string
+	Email           string
+	Password        string
+	DOB             string
+	Address         string
+	Phone           string
+	VerifiedEmailAt time.Time
+	Role            string
+	RequestVerified string
+	CreatedAt       time.Time
 }
 
 type (
