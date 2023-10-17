@@ -23,7 +23,7 @@ func main() {
 	e := echo.New()
 	e.Validator = &lib.CustomValidator{Validator: validator.New()}
 
-	app.Bootstrap(db, e)
+	app.Bootstrap(db, e, cfg)
 
 	host := os.Getenv("HOST")
 	if host == "" {

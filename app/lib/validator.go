@@ -8,8 +8,8 @@ import (
 )
 
 type ReqError struct {
-	Field string
-	Tag   string
+	Field string `json:"field"`
+	Tag   string `json:"tag"`
 }
 
 type CustomValidator struct {
