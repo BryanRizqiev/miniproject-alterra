@@ -1,6 +1,7 @@
 package user_controller
 
 import (
+	global_entity "miniproject-alterra/module/global/entity"
 	user_request "miniproject-alterra/module/user/controller/request"
 	user_response "miniproject-alterra/module/user/controller/response"
 	user_entity "miniproject-alterra/module/user/entity"
@@ -10,13 +11,17 @@ import (
 )
 
 type UserController struct {
-	userService user_entity.UserServiceInterface
+	userService  user_entity.UserServiceInterface
+	emailService global_entity.EmailServiceInterface
+	storageService global_entity.StorageServiceInterface
 }
 
-func NewUserController(userService user_entity.UserServiceInterface) *UserController {
+func NewUserController(userService user_entity.UserServiceInterface, emailService global_entity.EmailServiceInterface, storageService global_entity.StorageServiceInterface) *UserController {
 
 	return &UserController{
-		userService: userService,
+		userService:  userService,
+		emailService: emailService,
+		storageService: storageService
 	}
 
 }
@@ -46,6 +51,14 @@ func (this *UserController) Register(ctx echo.Context) error {
 			Message: "Server error",
 		})
 	}
+
+	format := global_entity.SendEmailFormat{
+		To:      userDTO.Email,
+		Cc:      userDTO.Email,
+		Subject: "Test",
+		Body:    "Registration Success",
+	}
+	go this.emailService.SendEmail(format)
 
 	return ctx.JSON(http.StatusCreated, user_response.RegisterResponse{
 		Message: "Success create user",
