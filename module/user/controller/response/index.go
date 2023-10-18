@@ -1,4 +1,4 @@
-package user_response
+package user_reqres
 
 type (
 	StandartResponse struct {
