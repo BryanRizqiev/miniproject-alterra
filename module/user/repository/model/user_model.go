@@ -8,7 +8,7 @@ import (
 type User struct {
 	*lib.Base
 
-	ID              string `gorm:"type:string;primary_key;size:36;default:uuid();column:id"`
+	ID              string
 	Name            string
 	Email           string
 	Password        string
