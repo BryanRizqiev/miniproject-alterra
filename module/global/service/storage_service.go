@@ -1,8 +1,10 @@
 package global_service
 
 import (
+	"io"
 	global_entity "miniproject-alterra/module/global/entity"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
@@ -23,6 +25,17 @@ func NewStorageService(uploader *s3manager.Uploader, downlaoder *s3manager.Downl
 
 }
 
+// UploadFile implements global_entity.StorageServiceInterface.
+func (this *StorageService) UploadFile(bucketName string, fileName string, body io.Reader) error {
+	_, err := this.uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(fileName),
+		Body:   body,
+	})
+
+	return err
+}
+
 // DeleteFile implements global_entity.StorageServiceInterface.
 func (*StorageService) DeleteFile(bucketName string, fileName string) error {
 	panic("unimplemented")
@@ -35,10 +48,5 @@ func (*StorageService) DownlaodFile(bucketName string, key string, downloadPath 
 
 // GetUrl implements global_entity.StorageServiceInterface.
 func (*StorageService) GetUrl(bucketName string, fileName string) (string, error) {
-	panic("unimplemented")
-}
-
-// UploadFile implements global_entity.StorageServiceInterface.
-func (*StorageService) UploadFile(filePath string, bucketName string, fileName string) error {
 	panic("unimplemented")
 }

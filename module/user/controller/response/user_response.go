@@ -1,7 +1,7 @@
 package user_response
 
 type (
-	RegisterResponse struct {
+	StandartResponse struct {
 		Message string `json:"message"`
 	}
 )

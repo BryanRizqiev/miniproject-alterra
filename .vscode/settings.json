@@ -3,5 +3,5 @@
     "go.alternateTools": {
         "go": "/snap/go/current/bin/go"
     },
-    "git.enabled": false
+    "git.enabled": true
 }

@@ -1,5 +1,7 @@
 package global_entity
 
+import "io"
+
 type SendEmailFormat struct {
 	To      string
 	Cc      string
@@ -13,7 +15,7 @@ type (
 	}
 
 	StorageServiceInterface interface {
-		UploadFile(filePath string, bucketName string, fileName string) error
+		UploadFile(bucketName string, fileName string, body io.Reader) error
 		DownlaodFile(bucketName string, key string, downloadPath string) error
 		DeleteFile(bucketName string, fileName string) error
 		GetUrl(bucketName string, fileName string) (string, error)

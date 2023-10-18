@@ -7,8 +7,8 @@ import (
 )
 
 type Base struct {
-	ID        string `gorm:"type:string;primary_key;size:36;default:uuid()"`
+	ID        string `gorm:"type:string;primary_key;size:36"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `grom:"index"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
