@@ -2,6 +2,7 @@ package user_controller
 
 import (
 	"fmt"
+	"miniproject-alterra/app/validator"
 	global_entity "miniproject-alterra/module/global/entity"
 	user_request "miniproject-alterra/module/user/controller/request"
 	user_response "miniproject-alterra/module/user/controller/response"
@@ -42,10 +43,11 @@ func (this *UserController) Register(ctx echo.Context) error {
 		return err
 	}
 	if req.DOB != "" {
-		_, err := time.Parse("2006-01-02", req.DOB)
+		dob, err := time.Parse("2006-01-02", req.DOB)
+		err = validator.DateValidation(err, dob)
 		if err != nil {
 			return ctx.JSON(http.StatusBadRequest, user_response.StandartResponse{
-				Message: "Date of birth not valid",
+				Message: "Date of birth not valid.",
 			})
 		}
 	}
@@ -83,6 +85,8 @@ func (this *UserController) Register(ctx echo.Context) error {
 	})
 
 }
+
+// mulai sini
 
 func (this *UserController) UploadPhoto(ctx echo.Context) error {
 

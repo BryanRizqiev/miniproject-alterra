@@ -5,7 +5,7 @@ import (
 	"miniproject-alterra/app"
 	"miniproject-alterra/app/config"
 	"miniproject-alterra/app/database"
-	"miniproject-alterra/app/lib"
+	app_validator "miniproject-alterra/app/validator"
 	"os"
 
 	"github.com/go-playground/validator"
@@ -21,7 +21,7 @@ func main() {
 	// }
 
 	e := echo.New()
-	e.Validator = &lib.CustomValidator{Validator: validator.New()}
+	e.Validator = &app_validator.CustomValidator{Validator: validator.New()}
 
 	app.Bootstrap(db, e, cfg)
 
