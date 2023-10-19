@@ -32,7 +32,7 @@ func DateValidation(err error, dob time.Time) error {
 		return err
 	}
 
-	minConstraint := time.Date(1945, 8, 15, 0, 0, 0, 0, time.UTC)
+	minConstraint := time.Date(1945, 8, 17, 0, 0, 0, 0, time.UTC)
 	if dob.After(time.Now()) || dob.Before(minConstraint) {
 		return errors.New("Time threeshold exceeded.")
 	}
