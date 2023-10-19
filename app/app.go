@@ -2,6 +2,7 @@ package app
 
 import (
 	"miniproject-alterra/app/config"
+	"miniproject-alterra/app/lib"
 	global_service "miniproject-alterra/module/global/service"
 	user_controller "miniproject-alterra/module/user/controller"
 	mysql_user_repository "miniproject-alterra/module/user/repository/mysql"
@@ -55,6 +56,7 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)
+	e.GET("/verify", userController.Verify, lib.JWTMiddleware())
 
 	e.POST("/upload-photo", userController.UploadPhoto)
 
