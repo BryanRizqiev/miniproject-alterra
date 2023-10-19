@@ -21,9 +21,21 @@ func NewUserRepository(db *gorm.DB) user_entity.UserRepositoryInterface {
 
 }
 
-func (*UserRepository) CheckUser(userDTO user_entity.UserDTO) (UserDTO error) {
+func (this *UserRepository) GetUserByEmail(email string) (user_entity.UserDTO, error) {
 
-	panic("unimplemented")
+	var user user_model.User
+	tx := this.db.Where("email = ?", email).First(&user)
+	if tx.Error != nil {
+		return user_entity.UserDTO{}, tx.Error
+	}
+
+	userDTO := user_entity.UserDTO{
+		ID:       user.ID,
+		Email:    user.Email,
+		Password: user.Password,
+	}
+
+	return userDTO, nil
 
 }
 

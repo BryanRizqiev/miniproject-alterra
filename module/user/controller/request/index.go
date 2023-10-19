@@ -8,3 +8,8 @@ type RegisterRequest struct {
 	DOB      string `json:"dob" form:"dob"`
 	Phone    string `json:"phone" form:"phone"`
 }
+
+type LoginRequest struct {
+	Email    string `json:"email" form:"email" validate:"required,email,min=3"`
+	Password string `json:"password" form:"password" validate:"required,min=3"`
+}
