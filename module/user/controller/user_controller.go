@@ -86,6 +86,45 @@ func (this *UserController) Register(ctx echo.Context) error {
 
 }
 
+func (this *UserController) Login(ctx echo.Context) error {
+
+	req := new(user_request.LoginRequest)
+
+	if err := ctx.Bind(req); err != nil {
+		fmt.Println(err)
+		return ctx.JSON(http.StatusBadRequest, user_response.LoginResponse{
+			Message: "Request not valid",
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return err
+	}
+
+	userDTO := user_entity.UserDTO{
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	token, err := this.userService.Login(userDTO)
+	if err != nil {
+		errMessage := err.Error()
+		if errMessage == "record not found" || errMessage == "credentials not valid" {
+			return ctx.JSON(http.StatusBadRequest, user_response.LoginResponse{
+				Message: "Credentials not valid",
+			})
+		}
+		return ctx.JSON(http.StatusInternalServerError, user_response.LoginResponse{
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, user_response.LoginResponse{
+		Message: "Login success.",
+		Token:   token,
+	})
+
+}
+
 // mulai sini
 
 func (this *UserController) UploadPhoto(ctx echo.Context) error {

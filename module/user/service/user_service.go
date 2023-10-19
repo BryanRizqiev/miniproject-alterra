@@ -1,6 +1,7 @@
 package user_service
 
 import (
+	"errors"
 	"miniproject-alterra/app/lib"
 	user_entity "miniproject-alterra/module/user/entity"
 )
@@ -17,9 +18,26 @@ func NewUserService(userRepository user_entity.UserRepositoryInterface) user_ent
 
 }
 
-func (*UserService) Login(req user_entity.UserDTO) (UserDTO error) {
+func (this *UserService) Login(userDTO user_entity.UserDTO) (string, error) {
 
-	panic("unimplemented")
+	var err error
+	var token string
+	oldPassword := userDTO.Password
+
+	userDTO, err = this.userRepository.GetUserByEmail(userDTO.Email)
+	if err != nil {
+		return "", err
+	}
+	if !lib.BcryptMatchingPassword(userDTO.Password, oldPassword) {
+		return "", errors.New("credentials not valid")
+	}
+
+	token, err = lib.CreateToken(userDTO.ID, userDTO.Email)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 
 }
 

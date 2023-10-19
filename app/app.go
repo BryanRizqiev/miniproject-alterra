@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func newSession(config *config.AppConfig) (*session.Session, error) {
+func newAWSSession(config *config.AppConfig) (*session.Session, error) {
 
 	endpoint := config.ENDPOINT
 	sess, err := session.NewSession(&aws.Config{
@@ -41,7 +41,7 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 
 	userRepository := mysql_user_repository.NewUserRepository(db)
 	userService := user_service.NewUserService(userRepository)
-	sess, err := newSession(config)
+	sess, err := newAWSSession(config)
 	if err != nil {
 		panic("Failed to create AWS session")
 	}
@@ -54,6 +54,8 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	userController := user_controller.NewUserController(userService, emailService, storageService)
 
 	e.POST("/register", userController.Register)
+	e.POST("/login", userController.Login)
+
 	e.POST("/upload-photo", userController.UploadPhoto)
 
 }
