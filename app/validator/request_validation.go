@@ -2,27 +2,28 @@ package validator
 
 import (
 	"errors"
+	"mime/multipart"
+	"miniproject-alterra/app/lib"
+	"path/filepath"
 	"strings"
 	"time"
 )
 
-var magicTable = map[string]string{
-	"\xff\xd8\xff":      "image/jpeg",
-	"\x89PNG\r\n\x1a\n": "image/png",
-	"GIF87a":            "image/gif",
-	"GIF89a":            "image/gif",
-}
+func ImageValidation(file *multipart.FileHeader) bool {
 
-func DetectImageType(b []byte) string {
-
-	s := string(b)
-	for key, val := range magicTable {
-		if strings.HasPrefix(s, key) {
-			return val
-		}
+	extension := strings.ToLower(filepath.Ext(file.Filename))
+	validImageExtensions := []string{".jpg", ".jpeg", ".png", ".gif", ".bmp"}
+	if !lib.Contains(validImageExtensions, extension) {
+		return false
 	}
 
-	return ""
+	contentType := file.Header.Get("Content-Type")
+	validImageMimeTypes := []string{"image/jpeg", "image/png", "image/gif", "image/bmp"}
+	if !lib.Contains(validImageMimeTypes, contentType) {
+		return false
+	}
+
+	return true
 
 }
 
