@@ -92,7 +92,6 @@ func (this *UserController) Login(ctx echo.Context) error {
 	req := new(user_request.LoginRequest)
 
 	if err := ctx.Bind(req); err != nil {
-		fmt.Println(err)
 		return ctx.JSON(http.StatusBadRequest, user_response.LoginResponse{
 			Message: "Request not valid",
 		})
@@ -153,7 +152,7 @@ func (this *UserController) UploadPhoto(ctx echo.Context) error {
 	}
 	defer src.Close()
 
-	err = this.storageService.UploadFile("event", fmt.Sprintf("%s", file.Filename), src)
+	err = this.storageService.UploadFile("user-photo", fmt.Sprintf("%s", file.Filename), src)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, user_response.StandartResponse{
 			Message: "Error when upload in cloud storage.",

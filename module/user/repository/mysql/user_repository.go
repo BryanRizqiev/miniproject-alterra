@@ -60,7 +60,7 @@ func (this *UserRepository) InsertUser(userDTO user_entity.UserDTO) error {
 		VerifiedEmailAt: lib.NewNullTime(testTime),
 	}
 
-	tx := this.db.Omit("role", "request_verified").Create(&user)
+	tx := this.db.Create(&user)
 
 	if tx.Error != nil {
 		return tx.Error
