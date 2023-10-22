@@ -125,8 +125,6 @@ func (this *UserController) Login(ctx echo.Context) error {
 
 }
 
-// mulai sini
-
 func (this *UserController) UploadPhoto(ctx echo.Context) error {
 
 	file, err := ctx.FormFile("photo")
@@ -138,12 +136,12 @@ func (this *UserController) UploadPhoto(ctx echo.Context) error {
 	src, err := file.Open()
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, user_response.StandartResponse{
-			Message: "Error when open file.",
+			Message: "Error when read file.",
 		})
 	}
 	defer src.Close()
 
-	err = this.storageService.UploadFile("event", fmt.Sprintf("%s", file.Filename), src)
+	err = this.storageService.UploadFile("user-photo", file.Filename, src)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, user_response.StandartResponse{
 			Message: "Error when upload in cloud storage.",
