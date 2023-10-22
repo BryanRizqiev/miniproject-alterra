@@ -25,8 +25,8 @@ func (this *EvidenceRepository) InsertEvidence(evdD evd_entity.EvidenceDTO) erro
 		ID:        lib.NewUuid(),
 		Content:   evdD.Content,
 		Image:     evdD.Image,
-		CreatedBy: evdD.UserID,
-		EventId:   evdD.EventID,
+		CreatedBy: evdD.UserId,
+		EventId:   evdD.EventId,
 	}
 
 	tx := this.db.Omit(clause.Associations).Create(&evd)
@@ -35,5 +35,28 @@ func (this *EvidenceRepository) InsertEvidence(evdD evd_entity.EvidenceDTO) erro
 	}
 
 	return nil
+
+}
+
+func (this *EvidenceRepository) GetEvidences(eventId string) ([]evd_entity.EvidenceDTO, error) {
+
+	var evdsM []evd_model.Evidence
+	var evdsD []evd_entity.EvidenceDTO
+
+	tx := this.db.Where("event_id = ?", eventId).Find(&evdsM)
+	if tx.Error != nil {
+		return evdsD, tx.Error
+	}
+
+	for _, value := range evdsM {
+		evdD := evd_entity.EvidenceDTO{
+			Id:      value.ID,
+			Content: value.Content,
+			Image:   value.Image,
+		}
+		evdsD = append(evdsD, evdD)
+	}
+
+	return evdsD, nil
 
 }

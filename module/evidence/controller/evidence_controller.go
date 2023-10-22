@@ -4,6 +4,7 @@ import (
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	evd_req "miniproject-alterra/module/evidence/controller/request"
+	evd_res "miniproject-alterra/module/evidence/controller/response"
 	evd_entity "miniproject-alterra/module/evidence/entity"
 	global_response "miniproject-alterra/module/global/controller/response"
 	"net/http"
@@ -71,6 +72,34 @@ func (this *EvidenceController) CreateEvidence(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusCreated, global_response.StandartResponse{
 		Message: "Success create evidence.",
+	})
+
+}
+
+func (this *EvidenceController) GetEvidences(ctx echo.Context) error {
+
+	eventId := ctx.Param("event-id")
+
+	evdsD, err := this.evdSvc.GetEvidences(eventId)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, evd_res.GetEvdsRes{
+			Message: "Error when get evidences.",
+		})
+	}
+
+	var evdsPresentator []evd_res.EvdsPresentator
+	for _, value := range evdsD {
+		evdPresentator := evd_res.EvdsPresentator{
+			Content:   value.Content,
+			Image:     value.Image,
+			CreatedAt: value.CreatedAt,
+		}
+		evdsPresentator = append(evdsPresentator, evdPresentator)
+	}
+
+	return ctx.JSON(http.StatusInternalServerError, evd_res.GetEvdsRes{
+		Message: "Success get evidences.",
+		Data:    evdsPresentator,
 	})
 
 }

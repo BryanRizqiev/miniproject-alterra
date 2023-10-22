@@ -70,6 +70,7 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 
 	evidence := e.Group("/evidences")
 	evidence.POST("/create", evdController.CreateEvidence, lib.JWTMiddleware())
+	evidence.GET("/get/:event-id", evdController.GetEvidences, lib.JWTMiddleware())
 
 	events := e.Group("/events")
 	events.POST("/create", evtController.CreateEvent, lib.JWTMiddleware())

@@ -26,11 +26,11 @@ func NewEvidenceService(evdRepo evd_entity.IEvidenceRepository, strgSvc global_e
 
 func (this *EvidenceService) CreateEvidence(userId string, evtId string, image multipart.File, evdD evd_entity.EvidenceDTO) error {
 
-	evdD.UserID = userId
-	evdD.EventID = evtId
+	evdD.UserId = userId
+	evdD.EventId = evtId
 
 	fileExt := strings.ToLower(filepath.Ext(evdD.Image))
-	newFilename := fmt.Sprintf("%s-%s%s", "event", lib.RandomString(8), fileExt)
+	newFilename := fmt.Sprintf("%s-%s%s", "evidence", lib.RandomString(8), fileExt)
 	evdD.Image = newFilename
 
 	var err error
@@ -45,5 +45,24 @@ func (this *EvidenceService) CreateEvidence(userId string, evtId string, image m
 	}
 
 	return nil
+
+}
+
+func (this *EvidenceService) GetEvidences(eventId string) ([]evd_entity.EvidenceDTO, error) {
+
+	evdsD, err := this.evdRepo.GetEvidences(eventId)
+	if err != nil {
+		return []evd_entity.EvidenceDTO{}, err
+	}
+
+	for i := range evdsD {
+		url, errURL := this.strgSvc.GetUrl("event", evdsD[i].Image)
+		if errURL != nil {
+			return []evd_entity.EvidenceDTO{}, err
+		}
+		evdsD[i].Image = url
+	}
+
+	return evdsD, nil
 
 }

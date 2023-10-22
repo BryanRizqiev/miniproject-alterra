@@ -8,12 +8,12 @@ import (
 )
 
 type EvidenceDTO struct {
-	ID        string
+	Id        string
 	Content   string
 	Image     string
-	UserID    string
+	UserId    string
 	CreatedBy user_entity.UserDTO
-	EventID   string
+	EventId   string
 	Event     event_entity.EventDTO
 	CreatedAt time.Time
 }
@@ -21,9 +21,11 @@ type EvidenceDTO struct {
 type (
 	IEvidenceService interface {
 		CreateEvidence(userId string, evtId string, image multipart.File, evdD EvidenceDTO) error
+		GetEvidences(eventId string) ([]EvidenceDTO, error)
 	}
 
 	IEvidenceRepository interface {
 		InsertEvidence(evdD EvidenceDTO) error
+		GetEvidences(eventId string) ([]EvidenceDTO, error)
 	}
 )
