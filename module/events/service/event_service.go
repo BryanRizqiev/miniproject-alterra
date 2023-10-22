@@ -32,8 +32,13 @@ func (this *EventService) CreateEvent(userID string, evtD event_entity.EventDTO,
 	fileExt := strings.ToLower(filepath.Ext(evtD.Image))
 	newFilename := fmt.Sprintf("%s-%s%s", "event", lib.RandomString(8), fileExt)
 	evtD.Image = newFilename
-	this.storageSvc.UploadFile("event", newFilename, image)
-	err := this.evtRepo.InsertEvent(evtD)
+
+	var err error
+	err = this.storageSvc.UploadFile("event", newFilename, image)
+	if err != nil {
+		return err
+	}
+	err = this.evtRepo.InsertEvent(evtD)
 	if err != nil {
 		return err
 	}

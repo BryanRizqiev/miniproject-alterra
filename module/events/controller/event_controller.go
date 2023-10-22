@@ -1,7 +1,6 @@
 package event_controller
 
 import (
-	"fmt"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	event_request "miniproject-alterra/module/events/controller/request"
@@ -40,7 +39,6 @@ func (this *EventController) CreateEvent(ctx echo.Context) error {
 
 	file, err := ctx.FormFile("image")
 	if err != nil {
-		fmt.Println(err.Error())
 		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
 			Message: "Request not valid.",
 		})
