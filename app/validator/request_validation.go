@@ -5,6 +5,7 @@ import (
 	"mime/multipart"
 	"miniproject-alterra/app/lib"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -39,5 +40,28 @@ func DateValidation(err error, dob time.Time) error {
 	}
 
 	return nil
+
+}
+
+func GoogleMapsURLValidator(str string) bool {
+
+	var reg1 *regexp.Regexp
+	var reg2 *regexp.Regexp
+	var err error
+
+	reg1, err = regexp.Compile(`^https://www\.google\.co\.id/maps/`)
+	if err != nil {
+		return false
+	}
+	reg2, err = regexp.Compile(`^https://maps\.app\.goo\.gl/`)
+	if err != nil {
+		return false
+	}
+
+	if !reg1.MatchString(str) && !reg2.MatchString(str) {
+		return false
+	}
+
+	return false
 
 }

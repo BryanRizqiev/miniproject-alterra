@@ -4,5 +4,5 @@ type CreateEvtReq struct {
 	Title       string `json:"title" form:"title" validate:"required,min=5"`
 	Location    string `json:"location" form:"location" validate:"required,min=5"`
 	LocationURL string `json:"location_url" form:"location_url"`
-	Description string `json:"description" form:"description" validate:"min=15"`
+	Description string `json:"description" form:"description"`
 }

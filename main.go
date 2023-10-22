@@ -16,9 +16,6 @@ func main() {
 
 	cfg := config.GetConfig()
 	db := database.InitDBMysql(cfg)
-	// if err := database.InitMigrationMySQL(db); err != nil {
-	// 	panic(err)
-	// }
 
 	e := echo.New()
 	e.Validator = &app_validator.CustomValidator{Validator: validator.New()}

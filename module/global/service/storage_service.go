@@ -3,6 +3,7 @@ package global_service
 import (
 	"io"
 	global_entity "miniproject-alterra/module/global/entity"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -25,7 +26,6 @@ func NewStorageService(uploader *s3manager.Uploader, downlaoder *s3manager.Downl
 
 }
 
-// UploadFile implements global_entity.StorageServiceInterface.
 func (this *StorageService) UploadFile(bucketName string, fileName string, body io.Reader) error {
 	_, err := this.uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(bucketName),
@@ -36,17 +36,26 @@ func (this *StorageService) UploadFile(bucketName string, fileName string, body 
 	return err
 }
 
-// DeleteFile implements global_entity.StorageServiceInterface.
 func (*StorageService) DeleteFile(bucketName string, fileName string) error {
 	panic("unimplemented")
 }
 
-// DownlaodFile implements global_entity.StorageServiceInterface.
 func (*StorageService) DownlaodFile(bucketName string, key string, downloadPath string) error {
 	panic("unimplemented")
 }
 
-// GetUrl implements global_entity.StorageServiceInterface.
-func (*StorageService) GetUrl(bucketName string, fileName string) (string, error) {
-	panic("unimplemented")
+func (this *StorageService) GetUrl(bucketName string, fileName string) (string, error) {
+
+	req, _ := this.client.GetObjectRequest(&s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(fileName),
+	})
+
+	urlStr, err := req.Presign(15 * time.Minute)
+	if err != nil {
+		return "", err
+	}
+
+	return urlStr, nil
+
 }

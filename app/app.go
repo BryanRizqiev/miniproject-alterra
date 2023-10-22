@@ -58,11 +58,12 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	userController := user_controller.NewUserController(userService, emailService, storageService)
 
 	evtRepo := mysql_event_repository.NewEventRepository(db)
-	evtSvc := event_service.NewEventService(evtRepo)
+	evtSvc := event_service.NewEventService(evtRepo, storageService)
 	evtController := event_controller.NewEventController(evtSvc)
 
-	events := e.Group("/events", lib.JWTMiddleware())
-	events.POST("/create", evtController.CreateEvent)
+	events := e.Group("/events")
+	events.POST("/create", evtController.CreateEvent, lib.JWTMiddleware())
+	events.GET("/get", evtController.GetEvent)
 
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)
