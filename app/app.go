@@ -6,6 +6,9 @@ import (
 	event_controller "miniproject-alterra/module/events/controller"
 	mysql_event_repository "miniproject-alterra/module/events/repository/mysql"
 	event_service "miniproject-alterra/module/events/service"
+	evd_controller "miniproject-alterra/module/evidence/controller"
+	mysql_evd_repo "miniproject-alterra/module/evidence/repository/mysql"
+	evd_svc "miniproject-alterra/module/evidence/service"
 	global_service "miniproject-alterra/module/global/service"
 	user_controller "miniproject-alterra/module/user/controller"
 	mysql_user_repository "miniproject-alterra/module/user/repository/mysql"
@@ -60,6 +63,13 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	evtRepo := mysql_event_repository.NewEventRepository(db)
 	evtSvc := event_service.NewEventService(evtRepo, storageService)
 	evtController := event_controller.NewEventController(evtSvc)
+
+	evdRepo := mysql_evd_repo.NewEvidenceRepository(db)
+	evdSvc := evd_svc.NewEvidenceService(evdRepo, storageService)
+	evdController := evd_controller.NewEvidenceController(evdSvc)
+
+	evidence := e.Group("/evidences")
+	evidence.POST("/create", evdController.CreateEvidence, lib.JWTMiddleware())
 
 	events := e.Group("/events")
 	events.POST("/create", evtController.CreateEvent, lib.JWTMiddleware())
