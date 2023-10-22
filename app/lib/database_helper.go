@@ -33,6 +33,16 @@ func NewNullTime(t time.Time) sql.NullTime {
 
 }
 
+func InsertDefaultValue(str string, dflt string) string {
+
+	if str != "" {
+		return str
+	}
+
+	return dflt
+
+}
+
 func NewUuid() string {
 
 	return uuid.NewString()

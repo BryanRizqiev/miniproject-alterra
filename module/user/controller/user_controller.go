@@ -2,6 +2,7 @@ package user_controller
 
 import (
 	"fmt"
+	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	global_entity "miniproject-alterra/module/global/entity"
 	user_request "miniproject-alterra/module/user/controller/request"
@@ -86,7 +87,54 @@ func (this *UserController) Register(ctx echo.Context) error {
 
 }
 
-// mulai sini
+func (this *UserController) Login(ctx echo.Context) error {
+
+	req := new(user_request.LoginRequest)
+
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, user_response.LoginResponse{
+			Message: "Request not valid",
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return err
+	}
+
+	userDTO := user_entity.UserDTO{
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	token, err := this.userService.Login(userDTO)
+	if err != nil {
+		errMessage := err.Error()
+		if errMessage == "record not found" || errMessage == "credentials not valid" {
+			return ctx.JSON(http.StatusBadRequest, user_response.LoginResponse{
+				Message: "Credentials not valid",
+			})
+		}
+		return ctx.JSON(http.StatusInternalServerError, user_response.LoginResponse{
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, user_response.LoginResponse{
+		Message: "Login success.",
+		Token:   token,
+	})
+
+}
+
+func (this *UserController) Verify(ctx echo.Context) error {
+
+	userID, email := lib.ExtractToken(ctx)
+	return ctx.JSON(http.StatusOK, user_response.VerifyResponse{
+		Message: "Success",
+		UserID:  userID,
+		Email:   email,
+	})
+
+}
 
 func (this *UserController) UploadPhoto(ctx echo.Context) error {
 
@@ -104,7 +152,7 @@ func (this *UserController) UploadPhoto(ctx echo.Context) error {
 	}
 	defer src.Close()
 
-	err = this.storageService.UploadFile("event", fmt.Sprintf("%s", file.Filename), src)
+	err = this.storageService.UploadFile("user-photo", fmt.Sprintf("%s", file.Filename), src)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, user_response.StandartResponse{
 			Message: "Error when upload in cloud storage.",

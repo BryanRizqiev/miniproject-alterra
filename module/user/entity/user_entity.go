@@ -19,13 +19,13 @@ type UserDTO struct {
 type (
 	UserServiceInterface interface {
 		Register(req UserDTO) error
-		Login(req UserDTO) (UserDTO error)
+		Login(req UserDTO) (string, error)
 		GetAllUser() ([]UserDTO, error)
 	}
 
 	UserRepositoryInterface interface {
 		InsertUser(userDTO UserDTO) error
-		CheckUser(userDTO UserDTO) (UserDTO error)
+		GetUserByEmail(email string) (UserDTO, error)
 		GetAllUser() ([]UserDTO, error)
 	}
 )

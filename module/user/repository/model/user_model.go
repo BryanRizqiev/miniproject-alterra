@@ -16,7 +16,6 @@ type User struct {
 	DOB             sql.NullString `gorm:"column:dob"`
 	Phone           sql.NullString
 	VerifiedEmailAt sql.NullTime
-	Role            sql.NullString
-	RequestVerified sql.NullString
-	CreatedAt       sql.NullTime
+	Role            string `gorm:"default:user"`
+	RequestVerified string `gorm:"default:default"`
 }

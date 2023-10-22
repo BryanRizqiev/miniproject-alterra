@@ -2,27 +2,29 @@ package validator
 
 import (
 	"errors"
+	"mime/multipart"
+	"miniproject-alterra/app/lib"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
 
-var magicTable = map[string]string{
-	"\xff\xd8\xff":      "image/jpeg",
-	"\x89PNG\r\n\x1a\n": "image/png",
-	"GIF87a":            "image/gif",
-	"GIF89a":            "image/gif",
-}
+func ImageValidation(file *multipart.FileHeader) bool {
 
-func DetectImageType(b []byte) string {
-
-	s := string(b)
-	for key, val := range magicTable {
-		if strings.HasPrefix(s, key) {
-			return val
-		}
+	extension := strings.ToLower(filepath.Ext(file.Filename))
+	validImageExtensions := []string{".jpg", ".jpeg", ".png", ".gif", ".bmp"}
+	if !lib.Contains(validImageExtensions, extension) {
+		return false
 	}
 
-	return ""
+	contentType := file.Header.Get("Content-Type")
+	validImageMimeTypes := []string{"image/jpeg", "image/png", "image/gif", "image/bmp"}
+	if !lib.Contains(validImageMimeTypes, contentType) {
+		return false
+	}
+
+	return true
 
 }
 
@@ -32,11 +34,34 @@ func DateValidation(err error, dob time.Time) error {
 		return err
 	}
 
-	minConstraint := time.Date(1945, 8, 15, 0, 0, 0, 0, time.UTC)
+	minConstraint := time.Date(1945, 8, 17, 0, 0, 0, 0, time.UTC)
 	if dob.After(time.Now()) || dob.Before(minConstraint) {
 		return errors.New("Time threeshold exceeded.")
 	}
 
 	return nil
+
+}
+
+func GoogleMapsURLValidator(str string) bool {
+
+	var reg1 *regexp.Regexp
+	var reg2 *regexp.Regexp
+	var err error
+
+	reg1, err = regexp.Compile(`^https://www\.google\.co\.id/maps/`)
+	if err != nil {
+		return false
+	}
+	reg2, err = regexp.Compile(`^https://maps\.app\.goo\.gl/`)
+	if err != nil {
+		return false
+	}
+
+	if !reg1.MatchString(str) && !reg2.MatchString(str) {
+		return false
+	}
+
+	return false
 
 }
