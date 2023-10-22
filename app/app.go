@@ -2,6 +2,10 @@ package app
 
 import (
 	"miniproject-alterra/app/config"
+	"miniproject-alterra/app/lib"
+	event_controller "miniproject-alterra/module/events/controller"
+	mysql_event_repository "miniproject-alterra/module/events/repository/mysql"
+	event_service "miniproject-alterra/module/events/service"
 	global_service "miniproject-alterra/module/global/service"
 	user_controller "miniproject-alterra/module/user/controller"
 	mysql_user_repository "miniproject-alterra/module/user/repository/mysql"
@@ -53,8 +57,17 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	storageService := global_service.NewStorageService(uploader, downloader, s3Client)
 	userController := user_controller.NewUserController(userService, emailService, storageService)
 
+	evtRepo := mysql_event_repository.NewEventRepository(db)
+	evtSvc := event_service.NewEventService(evtRepo, storageService)
+	evtController := event_controller.NewEventController(evtSvc)
+
+	events := e.Group("/events")
+	events.POST("/create", evtController.CreateEvent, lib.JWTMiddleware())
+	events.GET("/get", evtController.GetEvent)
+
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)
+	e.GET("/verify", userController.Verify, lib.JWTMiddleware())
 
 	e.POST("/upload-photo", userController.UploadPhoto)
 

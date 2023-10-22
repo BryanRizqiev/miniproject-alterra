@@ -2,6 +2,7 @@ package user_controller
 
 import (
 	"fmt"
+	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	global_entity "miniproject-alterra/module/global/entity"
 	user_request "miniproject-alterra/module/user/controller/request"
@@ -91,7 +92,6 @@ func (this *UserController) Login(ctx echo.Context) error {
 	req := new(user_request.LoginRequest)
 
 	if err := ctx.Bind(req); err != nil {
-		fmt.Println(err)
 		return ctx.JSON(http.StatusBadRequest, user_response.LoginResponse{
 			Message: "Request not valid",
 		})
@@ -125,7 +125,16 @@ func (this *UserController) Login(ctx echo.Context) error {
 
 }
 
-// mulai sini
+func (this *UserController) Verify(ctx echo.Context) error {
+
+	userID, email := lib.ExtractToken(ctx)
+	return ctx.JSON(http.StatusOK, user_response.VerifyResponse{
+		Message: "Success",
+		UserID:  userID,
+		Email:   email,
+	})
+
+}
 
 func (this *UserController) UploadPhoto(ctx echo.Context) error {
 
@@ -143,7 +152,7 @@ func (this *UserController) UploadPhoto(ctx echo.Context) error {
 	}
 	defer src.Close()
 
-	err = this.storageService.UploadFile("event", fmt.Sprintf("%s", file.Filename), src)
+	err = this.storageService.UploadFile("user-photo", fmt.Sprintf("%s", file.Filename), src)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, user_response.StandartResponse{
 			Message: "Error when upload in cloud storage.",
