@@ -1,7 +1,6 @@
 package user_controller
 
 import (
-	"fmt"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	global_entity "miniproject-alterra/module/global/entity"
@@ -147,12 +146,12 @@ func (this *UserController) UploadPhoto(ctx echo.Context) error {
 	src, err := file.Open()
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, user_response.StandartResponse{
-			Message: "Error when open file.",
+			Message: "Error when read file.",
 		})
 	}
 	defer src.Close()
 
-	err = this.storageService.UploadFile("user-photo", fmt.Sprintf("%s", file.Filename), src)
+	err = this.storageService.UploadFile("user-photo", file.Filename, src)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, user_response.StandartResponse{
 			Message: "Error when upload in cloud storage.",
