@@ -2,6 +2,8 @@ package evd_entity
 
 import (
 	"mime/multipart"
+	"miniproject-alterra/app/lib"
+	"miniproject-alterra/module/dto"
 	event_entity "miniproject-alterra/module/events/entity"
 	user_entity "miniproject-alterra/module/user/entity"
 	"time"
@@ -16,6 +18,18 @@ type EvidenceDTO struct {
 	EventId   string
 	Event     event_entity.EventDTO
 	CreatedAt time.Time
+}
+
+type Evidence struct {
+	*lib.Base
+
+	Id        string
+	Content   string
+	Image     string
+	CreatedBy string
+	User      dto.User `gorm:"foreignKey:CreatedBy"`
+	EventId   string
+	Event     dto.Event `gorm:"foreignKey:EventId"`
 }
 
 type (

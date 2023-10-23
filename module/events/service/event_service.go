@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"mime/multipart"
 	"miniproject-alterra/app/lib"
+	"miniproject-alterra/module/dto"
 	event_entity "miniproject-alterra/module/events/entity"
 	global_entity "miniproject-alterra/module/global/entity"
-	user_model "miniproject-alterra/module/user/repository/model"
 	"path/filepath"
 	"strings"
 )
@@ -47,26 +47,37 @@ func (this *EventService) CreateEvent(userID string, evtD event_entity.EventDTO,
 
 }
 
-func (this *EventService) GetEvent() ([]event_entity.EventDTO, error) {
+func (this *EventService) GetEvent() ([]dto.Event, error) {
 
-	evtsD, err := this.evtRepo.GetEvent()
-	for i := range evtsD {
-		usr := user_model.User{}
-		usr.Name = evtsD[i].CreatedBy.Name
-		usr.Role = evtsD[i].CreatedBy.Role
-		evtsD[i].CreatedBy = usr
+	evts, err := this.evtRepo.GetEvent()
+	for i := range evts {
+		usr := dto.User{}
+		usr.Name = evts[i].CreatedBy.Name
+		usr.Role = evts[i].CreatedBy.Role
+		evts[i].CreatedBy = usr
 
-		url, errURL := this.storageSvc.GetUrl("event", evtsD[i].Image)
+		url, errURL := this.storageSvc.GetUrl("event", evts[i].Image.String)
 		if errURL != nil {
-			return []event_entity.EventDTO{}, err
+			return []dto.Event{}, err
 		}
-		evtsD[i].Image = url
+		evts[i].Image.String = url
+
+		evds := evts[i].Evidences
+		for j := range evds {
+			url, errURL := this.storageSvc.GetUrl("event", evts[i].Image.String)
+			if errURL != nil {
+				return []dto.Event{}, err
+			}
+			evds[j].Image = url
+		}
+
+		evts[i].Evidences = evds
 	}
 
 	if err != nil {
-		return []event_entity.EventDTO{}, err
+		return []dto.Event{}, err
 	}
 
-	return evtsD, nil
+	return evts, nil
 
 }

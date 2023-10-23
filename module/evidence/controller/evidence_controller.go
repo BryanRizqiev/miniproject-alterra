@@ -87,12 +87,11 @@ func (this *EvidenceController) GetEvidences(ctx echo.Context) error {
 		})
 	}
 
-	var evdsPresentator []evd_res.EvdsPresentator
+	var evdsPresentator []evd_res.EvdsPresentation
 	for _, value := range evdsD {
-		evdPresentator := evd_res.EvdsPresentator{
-			Content:   value.Content,
-			Image:     value.Image,
-			CreatedAt: value.CreatedAt,
+		evdPresentator := evd_res.EvdsPresentation{
+			Content: value.Content,
+			Image:   value.Image,
 		}
 		evdsPresentator = append(evdsPresentator, evdPresentator)
 	}

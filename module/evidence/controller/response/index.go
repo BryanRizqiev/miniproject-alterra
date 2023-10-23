@@ -1,14 +1,14 @@
 package evd_res
 
-import "time"
-
-type EvdsPresentator struct {
-	Content   string
-	Image     string
-	CreatedAt time.Time
+type EvdsPresentation struct {
+	Content   string `json:"content"`
+	Image     string `json:"image"`
+	CreatedAt string `json:"created_at"`
+	CreatedBy string `json:"created_by"`
+	Verified  bool   `json:"verified"`
 }
 
 type GetEvdsRes struct {
 	Message string
-	Data    []EvdsPresentator
+	Data    []EvdsPresentation
 }
