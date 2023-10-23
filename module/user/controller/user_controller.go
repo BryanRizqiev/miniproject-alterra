@@ -3,6 +3,7 @@ package user_controller
 import (
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
+	global_response "miniproject-alterra/module/global/controller/response"
 	global_entity "miniproject-alterra/module/global/entity"
 	user_request "miniproject-alterra/module/user/controller/request"
 	user_response "miniproject-alterra/module/user/controller/response"
@@ -160,6 +161,89 @@ func (this *UserController) UploadPhoto(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, user_response.StandartResponse{
 		Message: "Upload photo success.",
+	})
+
+}
+
+func (this *UserController) RequestVerified(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+	err := this.userService.RequestVerification(userId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when request verification."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "email not verified" {
+			errResMessage = "Email must be verified first."
+			errResStatus = http.StatusBadRequest
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Request verified success.",
+	})
+
+}
+
+func (this *UserController) VerifyEmail(ctx echo.Context) error {
+
+	userId := ctx.Param("user-id")
+
+	err := this.userService.Verify(userId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when request verification."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user already verified" {
+			errResMessage = "User already verified."
+			errResStatus = http.StatusBadRequest
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Verify user success.",
+	})
+
+}
+
+func (this *UserController) RequestVerifyEmail(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+
+	err := this.userService.SendVerifyEmail(userId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when request verification."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user already verified" {
+			errResMessage = "User already verified."
+			errResStatus = http.StatusBadRequest
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Request verified email success.",
 	})
 
 }

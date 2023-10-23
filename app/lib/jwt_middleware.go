@@ -36,8 +36,8 @@ func CreateToken(userId string, email string) (string, error) {
 
 }
 
-func ExtractToken(e echo.Context) (string, string) {
-	user := e.Get("user").(*jwt.Token)
+func ExtractToken(ctx echo.Context) (string, string) {
+	user := ctx.Get("user").(*jwt.Token)
 	if user.Valid {
 		claims := user.Claims.(jwt.MapClaims)
 		userId := claims["user_id"].(string)

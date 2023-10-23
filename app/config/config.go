@@ -10,6 +10,7 @@ import (
 var JWT_SECRET string
 
 type AppConfig struct {
+	APP_URL               string
 	EMAIL_SENDER_NAME     string
 	EMAIL_SMTP_HOST       string
 	EMAIL_SMTP_PORT       int
@@ -41,6 +42,7 @@ func Config() *AppConfig {
 		panic("Error when loading .env file")
 	}
 
+	app.APP_URL = os.Getenv("APP_URL")
 	app.DB_USERNAME = os.Getenv("DB_USERNAME")
 	app.DB_PASSWORD = os.Getenv("DB_PASSWORD")
 	app.DB_HOSTNAME = os.Getenv("DB_HOSTNAME")
