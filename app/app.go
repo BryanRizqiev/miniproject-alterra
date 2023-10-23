@@ -79,6 +79,7 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 
 	admins := e.Group("/admins")
 	admins.GET("/requesting-users", userController.GetRequestingUser, lib.JWTMiddleware())
+	admins.PUT("/change-verification", userController.ApproveVerification, lib.JWTMiddleware())
 
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)

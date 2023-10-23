@@ -9,6 +9,7 @@ type (
 		Address   string
 		Phone     string
 		Photo     string
+		Role      string
 		CreatedAt string
 	}
 )

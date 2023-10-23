@@ -52,6 +52,7 @@ type (
 		Verify(userId string) error
 		SendVerifyEmail(userId string) error
 		GetRequestingUser(userId string) ([]User, error)
+		UpdateUserRole(reqUserId string, userId string, role string) error
 	}
 
 	UserRepositoryInterface interface {
@@ -63,5 +64,6 @@ type (
 		CheckUserVerifiedEmail(userId string) (bool, error)
 		FindUser(userId string) (User, error)
 		GetRequestingUser() ([]User, error)
+		UpdateUserRole(userId string, role string) error
 	}
 )

@@ -154,3 +154,23 @@ func (this *UserService) GetRequestingUser(userId string) ([]user_entity.User, e
 	return users, nil
 
 }
+
+func (this *UserService) UpdateUserRole(reqUserId string, userId string, role string) error {
+
+	user, err := this.userRepo.FindUser(reqUserId)
+	if err != nil {
+		return err
+	}
+
+	if !lib.CheckIsAdmin(user) {
+		return errors.New("user not allowed")
+	}
+
+	err = this.userRepo.UpdateUserRole(userId, role)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

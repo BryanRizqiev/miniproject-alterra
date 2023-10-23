@@ -246,6 +246,7 @@ func (this *UserController) GetRequestingUser(ctx echo.Context) error {
 			Address:   user.Address.String,
 			Phone:     user.Phone.String,
 			Photo:     user.Photo.String,
+			Role:      user.Role,
 			CreatedAt: user.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
 		}
 		usersPres = append(usersPres, userPres)
@@ -254,6 +255,50 @@ func (this *UserController) GetRequestingUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, user_response.GetRequestingUserRes{
 		Message: "Success get requesting users",
 		Data:    usersPres,
+	})
+
+}
+
+func (this *UserController) ApproveVerification(ctx echo.Context) error {
+
+	req := new(user_request.ApproveVerificationReq)
+
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, user_response.StandartResponse{
+			Message: "Request not valid",
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return err
+	}
+
+	userId, _ := lib.ExtractToken(ctx)
+
+	err := this.userService.UpdateUserRole(userId, req.UserId, req.Role)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when change verification."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "record not found" {
+			errResMessage = "User.Id not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success change verification",
 	})
 
 }
