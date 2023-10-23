@@ -143,15 +143,28 @@ func (this *UserRepository) UpdateUserRole(userId string, role string) error {
 
 }
 
-func (this *UserRepository) FindUser(userId string) (user_model.User, error) {
+func (this *UserRepository) FindUser(userId string) (user_entity.User, error) {
 
-	var user user_model.User
+	var user user_entity.User
 
 	tx := this.db.First(&user, "id = ?", userId)
 	if tx.Error != nil {
-		return user_model.User{}, tx.Error
+		return user_entity.User{}, tx.Error
 	}
 
 	return user, nil
+
+}
+
+func (this *UserRepository) GetRequestingUser() ([]user_entity.User, error) {
+
+	var users []user_entity.User
+
+	err := this.db.Where("request_verified = ?", "request").Find(&users).Error
+	if err != nil {
+		return []user_entity.User{}, err
+	}
+
+	return users, nil
 
 }

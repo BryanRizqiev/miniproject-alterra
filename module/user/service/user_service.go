@@ -134,3 +134,23 @@ func (this *UserService) SendVerifyEmail(userId string) error {
 	return nil
 
 }
+
+func (this *UserService) GetRequestingUser(userId string) ([]user_entity.User, error) {
+
+	user, err := this.userRepo.FindUser(userId)
+	if err != nil {
+		return []user_entity.User{}, err
+	}
+
+	if !lib.CheckIsAdmin(user) {
+		return []user_entity.User{}, errors.New("user not allowed")
+	}
+
+	users, err := this.userRepo.GetRequestingUser()
+	if err != nil {
+		return []user_entity.User{}, err
+	}
+
+	return users, nil
+
+}

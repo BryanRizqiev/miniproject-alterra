@@ -74,8 +74,11 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	evidence.GET("/get/:event-id", evdController.GetEvidences, lib.JWTMiddleware())
 
 	events := e.Group("/events")
-	events.POST("/create", evtController.CreateEvent, lib.JWTMiddleware())
-	events.GET("/get", evtController.GetEvent)
+	events.POST("", evtController.CreateEvent, lib.JWTMiddleware())
+	events.GET("", evtController.GetEvent)
+
+	admins := e.Group("/admins")
+	admins.GET("/requesting-users", userController.GetRequestingUser, lib.JWTMiddleware())
 
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)
@@ -83,7 +86,6 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	e.POST("/request-verified", userController.RequestVerified, lib.JWTMiddleware())
 	e.POST("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
 	e.GET("/verify-email/:user-id", userController.VerifyEmail)
-
-	e.POST("/upload-photo", userController.UploadPhoto)
+	e.GET("/verify-email/:user-id", userController.VerifyEmail)
 
 }

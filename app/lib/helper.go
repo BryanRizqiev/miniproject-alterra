@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"html/template"
 	"math/rand"
+	user_entity "miniproject-alterra/module/user/entity"
 )
+
+const DATE_WITH_DAY_FORMAT = "2006-01-02 15:04:05 Monday"
 
 func Contains(arr []string, str string) bool {
 	for _, s := range arr {
@@ -37,4 +40,14 @@ func ParseTemplate(templateFileName string, data interface{}) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func CheckIsAdmin(user user_entity.User) bool {
+
+	if user.Role == "admin" {
+		return true
+	}
+
+	return false
+
 }

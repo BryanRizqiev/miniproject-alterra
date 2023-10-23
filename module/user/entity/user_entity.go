@@ -1,8 +1,10 @@
 package user_entity
 
 import (
-	user_model "miniproject-alterra/module/user/repository/model"
+	"database/sql"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type UserDTO struct {
@@ -19,6 +21,28 @@ type UserDTO struct {
 	CreatedAt       time.Time
 }
 
+type Base struct {
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+}
+
+type User struct {
+	*Base
+
+	ID              string `gorm:"primaryKey"`
+	Name            string
+	Email           string
+	Password        string
+	DOB             sql.NullString `gorm:"column:dob"`
+	Address         sql.NullString
+	Phone           sql.NullString
+	Photo           sql.NullString
+	VerifiedEmailAt sql.NullTime
+	Role            string `gorm:"default:user"`
+	RequestVerified string `gorm:"default:default"`
+}
+
 type (
 	UserServiceInterface interface {
 		Register(req UserDTO) error
@@ -27,6 +51,7 @@ type (
 		RequestVerification(userId string) error
 		Verify(userId string) error
 		SendVerifyEmail(userId string) error
+		GetRequestingUser(userId string) ([]User, error)
 	}
 
 	UserRepositoryInterface interface {
@@ -36,6 +61,7 @@ type (
 		UpdateUserRequestVerified(userId string) error
 		UpdateUserVerifiedEmail(userId string) error
 		CheckUserVerifiedEmail(userId string) (bool, error)
-		FindUser(userId string) (user_model.User, error)
+		FindUser(userId string) (User, error)
+		GetRequestingUser() ([]User, error)
 	}
 )
