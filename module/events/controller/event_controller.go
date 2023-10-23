@@ -6,6 +6,7 @@ import (
 	event_request "miniproject-alterra/module/events/controller/request"
 	evt_response "miniproject-alterra/module/events/controller/response"
 	event_entity "miniproject-alterra/module/events/entity"
+	evd_res "miniproject-alterra/module/evidence/controller/response"
 	global_response "miniproject-alterra/module/global/controller/response"
 	"net/http"
 
@@ -94,22 +95,40 @@ func (this *EventController) GetEvent(ctx echo.Context) error {
 		})
 	}
 
-	var presentations []evt_response.StdPresentation
+	var presentations []evt_response.EventPresentation
 	for _, value := range evts {
 		verfied := true
 		if value.CreatedBy.Role == "user" {
 			verfied = false
 		}
-		presentation := evt_response.StdPresentation{
-			ID:                value.ID,
+
+		var evdPresentations []evd_res.EvdsPresentation
+		for _, evd := range value.Evidences {
+			evdVerified := true
+			if evd.User.Role == "user" {
+				evdVerified = false
+			}
+			evdPresentation := evd_res.EvdsPresentation{
+				Content:   evd.Content,
+				Image:     evd.Image,
+				CreatedAt: evd.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
+				CreatedBy: evd.User.Name,
+				Verified:  evdVerified,
+			}
+			evdPresentations = append(evdPresentations, evdPresentation)
+		}
+
+		presentation := evt_response.EventPresentation{
+			Id:                value.Id,
 			Title:             value.Title,
 			Location:          value.Location,
-			LocationURL:       value.LocationURL,
-			Description:       value.Description,
-			Image:             value.Image,
-			RecommendedAction: value.RecommendedAction,
+			LocationURL:       value.LocationURL.String,
+			Description:       value.Description.String,
+			Image:             value.Image.String,
+			RecommendedAction: value.RecommendedAction.String,
 			CreatedBy:         value.CreatedBy.Name,
 			Verified:          verfied,
+			Evidences:         evdPresentations,
 		}
 		presentations = append(presentations, presentation)
 	}

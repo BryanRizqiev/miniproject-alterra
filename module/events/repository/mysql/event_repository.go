@@ -2,6 +2,7 @@ package mysql_event_repository
 
 import (
 	"miniproject-alterra/app/lib"
+	"miniproject-alterra/module/dto"
 	event_entity "miniproject-alterra/module/events/entity"
 	event_model "miniproject-alterra/module/events/repository/model"
 
@@ -42,30 +43,15 @@ func (this *EventReposistory) InsertEvent(evtD event_entity.EventDTO) error {
 
 }
 
-func (this *EventReposistory) GetEvent() ([]event_entity.EventDTO, error) {
+func (this *EventReposistory) GetEvent() ([]dto.Event, error) {
 
-	var evtsM []event_model.Event
-	var evtsD []event_entity.EventDTO
+	var evts []dto.Event
 
-	tx := this.db.Where("status = ?", "publish").Preload("CreatedBy").Find(&evtsM)
-	if tx.Error != nil {
-		return evtsD, tx.Error
+	err := this.db.Where("status = ?", "publish").Preload("CreatedBy").Preload("Evidences.User").Find(&evts).Error
+	if err != nil {
+		return []dto.Event{}, err
 	}
 
-	for _, value := range evtsM {
-		evtDTO := event_entity.EventDTO{
-			ID:                value.ID,
-			Title:             value.Title,
-			Location:          value.Location,
-			LocationURL:       value.LocationURL.String,
-			Description:       value.Description.String,
-			Image:             value.Image.String,
-			RecommendedAction: value.RecommendedAction.String,
-			CreatedBy:         value.CreatedBy,
-		}
-		evtsD = append(evtsD, evtDTO)
-	}
-
-	return evtsD, nil
+	return evts, nil
 
 }

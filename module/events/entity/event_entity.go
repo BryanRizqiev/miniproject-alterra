@@ -2,6 +2,7 @@ package event_entity
 
 import (
 	"mime/multipart"
+	"miniproject-alterra/module/dto"
 	user_model "miniproject-alterra/module/user/repository/model"
 	"time"
 )
@@ -23,11 +24,11 @@ type EventDTO struct {
 type (
 	IEventReposistory interface {
 		InsertEvent(eventDTO EventDTO) error
-		GetEvent() ([]EventDTO, error)
+		GetEvent() ([]dto.Event, error)
 	}
 
 	IEventService interface {
 		CreateEvent(userID string, evtDTO EventDTO, image multipart.File) error
-		GetEvent() ([]EventDTO, error)
+		GetEvent() ([]dto.Event, error)
 	}
 )
