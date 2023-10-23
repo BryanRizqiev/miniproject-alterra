@@ -287,7 +287,7 @@ func (this *UserController) ApproveVerification(ctx echo.Context) error {
 		}
 
 		if errMessage == "record not found" {
-			errResMessage = "User.Id not found."
+			errResMessage = "User not found."
 			errResStatus = http.StatusNotFound
 		}
 
