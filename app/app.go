@@ -46,8 +46,6 @@ func newAWSSession(config *config.AppConfig) (*session.Session, error) {
 
 func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 
-	userRepository := mysql_user_repository.NewUserRepository(db)
-	userService := user_service.NewUserService(userRepository)
 	sess, err := newAWSSession(config)
 	if err != nil {
 		panic("Failed to create AWS session")
@@ -58,6 +56,9 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 
 	emailService := global_service.NewEmailService(config)
 	storageService := global_service.NewStorageService(uploader, downloader, s3Client)
+
+	userRepository := mysql_user_repository.NewUserRepository(db)
+	userService := user_service.NewUserService(userRepository, emailService, config)
 	userController := user_controller.NewUserController(userService, emailService, storageService)
 
 	evtRepo := mysql_event_repository.NewEventRepository(db)
@@ -73,13 +74,19 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	evidence.GET("/get/:event-id", evdController.GetEvidences, lib.JWTMiddleware())
 
 	events := e.Group("/events")
-	events.POST("/create", evtController.CreateEvent, lib.JWTMiddleware())
-	events.GET("/get", evtController.GetEvent)
+	events.POST("", evtController.CreateEvent, lib.JWTMiddleware())
+	events.GET("", evtController.GetEvent)
+
+	admins := e.Group("/admins")
+	admins.GET("/requesting-users", userController.GetRequestingUser, lib.JWTMiddleware())
+	admins.PUT("/change-verification", userController.ApproveVerification, lib.JWTMiddleware())
 
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)
 	e.GET("/verify", userController.Verify, lib.JWTMiddleware())
-
-	e.POST("/upload-photo", userController.UploadPhoto)
+	e.POST("/request-verified", userController.RequestVerified, lib.JWTMiddleware())
+	e.POST("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
+	e.GET("/verify-email/:user-id", userController.VerifyEmail)
+	e.GET("/verify-email/:user-id", userController.VerifyEmail)
 
 }

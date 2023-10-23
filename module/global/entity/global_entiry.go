@@ -2,6 +2,11 @@ package global_entity
 
 import "io"
 
+type EmailDataFormat struct {
+	Name string
+	URL  string
+}
+
 type SendEmailFormat struct {
 	To      string
 	Cc      string
