@@ -51,7 +51,7 @@ func (this *StorageService) GetUrl(bucketName string, fileName string) (string, 
 		Key:    aws.String(fileName),
 	})
 
-	urlStr, err := req.Presign(15 * time.Minute)
+	urlStr, err := req.Presign(10 * time.Minute)
 	if err != nil {
 		return "", err
 	}

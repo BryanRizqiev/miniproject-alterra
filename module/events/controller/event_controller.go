@@ -86,6 +86,50 @@ func (this *EventController) CreateEvent(ctx echo.Context) error {
 
 }
 
+func (this *EventController) ApproveEvent(ctx echo.Context) error {
+
+	req := new(event_request.UpdateEventStatusReq)
+
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "Request not valid.",
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return err
+	}
+
+	userId, _ := lib.ExtractToken(ctx)
+
+	err := this.evtSvc.PublishEvent(userId, req.EventId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when approve event."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "record not found" {
+			errResMessage = "Event not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success approve event.",
+	})
+
+}
+
 func (this *EventController) GetEvent(ctx echo.Context) error {
 
 	evts, err := this.evtSvc.GetEvent()
@@ -129,6 +173,7 @@ func (this *EventController) GetEvent(ctx echo.Context) error {
 			CreatedBy:         value.CreatedBy.Name,
 			Verified:          verfied,
 			Evidences:         evdPresentations,
+			CreatedAt:         value.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
 		}
 		presentations = append(presentations, presentation)
 	}

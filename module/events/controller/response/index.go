@@ -19,5 +19,6 @@ type (
 		CreatedBy         string                     `json:"created_by"`
 		Verified          bool                       `json:"verified"`
 		Evidences         []evd_res.EvdsPresentation `json:"evidences"`
+		CreatedAt         string                     `json:"created_at`
 	}
 )

@@ -33,7 +33,7 @@ func NewNullTime(t time.Time) sql.NullTime {
 
 }
 
-func InsertDefaultValue(str string, dflt string) string {
+func InsertDefaultValue(dflt string, str string) string {
 
 	if str != "" {
 		return str

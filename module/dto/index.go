@@ -2,11 +2,19 @@ package dto
 
 import (
 	"database/sql"
-	"miniproject-alterra/app/lib"
+	"time"
+
+	"gorm.io/gorm"
 )
 
+type Base struct {
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+}
+
 type Evidence struct {
-	*lib.Base
+	*Base
 
 	Id        string
 	Content   string
@@ -18,7 +26,7 @@ type Evidence struct {
 }
 
 type User struct {
-	*lib.Base
+	*Base
 
 	ID              string `gorm:"primaryKey"`
 	Name            string
@@ -34,7 +42,7 @@ type User struct {
 }
 
 type Event struct {
-	*lib.Base
+	*Base
 
 	Id                string `gorm:"primaryKey"`
 	Title             string

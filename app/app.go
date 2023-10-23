@@ -9,10 +9,12 @@ import (
 	evd_controller "miniproject-alterra/module/evidence/controller"
 	mysql_evd_repo "miniproject-alterra/module/evidence/repository/mysql"
 	evd_svc "miniproject-alterra/module/evidence/service"
+	global_repo "miniproject-alterra/module/global/repository"
 	global_service "miniproject-alterra/module/global/service"
 	user_controller "miniproject-alterra/module/user/controller"
 	mysql_user_repository "miniproject-alterra/module/user/repository/mysql"
 	user_service "miniproject-alterra/module/user/service"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -20,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/labstack/echo/v4"
+	"github.com/sashabaranov/go-openai"
 	"gorm.io/gorm"
 )
 
@@ -61,8 +64,12 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	userService := user_service.NewUserService(userRepository, emailService, config)
 	userController := user_controller.NewUserController(userService, emailService, storageService)
 
+	globalRepo := global_repo.NewGlobalRepo(db)
+
 	evtRepo := mysql_event_repository.NewEventRepository(db)
-	evtSvc := event_service.NewEventService(evtRepo, storageService)
+	openaiClient := openai.NewClient(os.Getenv("API_KEY"))
+	openaiSvc := global_service.NewOpenAIService(openaiClient, openai.GPT3Dot5Turbo)
+	evtSvc := event_service.NewEventService(evtRepo, storageService, openaiSvc, globalRepo)
 	evtController := event_controller.NewEventController(evtSvc)
 
 	evdRepo := mysql_evd_repo.NewEvidenceRepository(db)
@@ -75,6 +82,7 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 
 	events := e.Group("/events")
 	events.POST("", evtController.CreateEvent, lib.JWTMiddleware())
+	events.PUT("/approve", evtController.ApproveEvent, lib.JWTMiddleware())
 	events.GET("", evtController.GetEvent)
 
 	admins := e.Group("/admins")

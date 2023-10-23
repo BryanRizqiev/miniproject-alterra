@@ -3,6 +3,7 @@ package mysql_user_repository
 import (
 	"errors"
 	"miniproject-alterra/app/lib"
+	"miniproject-alterra/module/dto"
 	user_entity "miniproject-alterra/module/user/entity"
 	user_model "miniproject-alterra/module/user/repository/model"
 	"time"
@@ -143,13 +144,13 @@ func (this *UserRepository) UpdateUserRole(userId string, role string) error {
 
 }
 
-func (this *UserRepository) FindUser(userId string) (user_entity.User, error) {
+func (this *UserRepository) FindUser(userId string) (dto.User, error) {
 
-	var user user_entity.User
+	var user dto.User
 
 	tx := this.db.First(&user, "id = ?", userId)
 	if tx.Error != nil {
-		return user_entity.User{}, tx.Error
+		return dto.User{}, tx.Error
 	}
 
 	return user, nil
