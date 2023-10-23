@@ -2,6 +2,7 @@ package user_entity
 
 import (
 	"database/sql"
+	"miniproject-alterra/module/dto"
 	"time"
 
 	"gorm.io/gorm"
@@ -62,7 +63,7 @@ type (
 		UpdateUserRequestVerified(userId string) error
 		UpdateUserVerifiedEmail(userId string) error
 		CheckUserVerifiedEmail(userId string) (bool, error)
-		FindUser(userId string) (User, error)
+		FindUser(userId string) (dto.User, error)
 		GetRequestingUser() ([]User, error)
 		UpdateUserRole(userId string, role string) error
 	}

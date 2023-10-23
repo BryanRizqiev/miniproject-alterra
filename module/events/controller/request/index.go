@@ -6,3 +6,7 @@ type CreateEvtReq struct {
 	LocationURL string `json:"location_url" form:"location_url"`
 	Description string `json:"description" form:"description"`
 }
+
+type UpdateEventStatusReq struct {
+	EventId string `json:"event_id" form:"event_id" validate:"required,min=16"`
+}

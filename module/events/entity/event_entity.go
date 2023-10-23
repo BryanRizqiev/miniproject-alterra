@@ -23,12 +23,16 @@ type EventDTO struct {
 
 type (
 	IEventReposistory interface {
-		InsertEvent(eventDTO EventDTO) error
+		UpdateRecommendedAction(evt dto.Event, value string) error
+		InsertEvent(evtD EventDTO) (dto.Event, error)
 		GetEvent() ([]dto.Event, error)
+		UpdateEventStatus(event dto.Event, status string) error
+		FindEvent(eventId string) (dto.Event, error)
 	}
 
 	IEventService interface {
 		CreateEvent(userID string, evtDTO EventDTO, image multipart.File) error
 		GetEvent() ([]dto.Event, error)
+		PublishEvent(userId, evtId string) error
 	}
 )

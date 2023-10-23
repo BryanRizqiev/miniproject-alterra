@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"html/template"
 	"math/rand"
-	user_entity "miniproject-alterra/module/user/entity"
+	"miniproject-alterra/module/dto"
 )
 
 const DATE_WITH_DAY_FORMAT = "2006-01-02 15:04:05 Monday"
@@ -42,7 +42,7 @@ func ParseTemplate(templateFileName string, data interface{}) (string, error) {
 	return buf.String(), nil
 }
 
-func CheckIsAdmin(user user_entity.User) bool {
+func CheckIsAdmin(user dto.User) bool {
 
 	if user.Role == "admin" {
 		return true
