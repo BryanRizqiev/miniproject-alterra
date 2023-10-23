@@ -8,7 +8,7 @@ import (
 type User struct {
 	*lib.Base
 
-	ID              string
+	ID              string `gorm:"primaryKey"`
 	Name            string
 	Email           string
 	Password        string
