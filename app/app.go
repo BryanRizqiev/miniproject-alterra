@@ -76,25 +76,28 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	evdSvc := evd_svc.NewEvidenceService(evdRepo, storageService)
 	evdController := evd_controller.NewEvidenceController(evdSvc)
 
+	// Route
+
 	evidence := e.Group("/evidences")
 	evidence.POST("/create", evdController.CreateEvidence, lib.JWTMiddleware())
 	evidence.GET("/get/:event-id", evdController.GetEvidences, lib.JWTMiddleware())
 
 	events := e.Group("/events")
 	events.POST("", evtController.CreateEvent, lib.JWTMiddleware())
+	events.PUT("", evtController.UpdateEvent, lib.JWTMiddleware())
 	events.PUT("/approve", evtController.ApproveEvent, lib.JWTMiddleware())
+
 	events.GET("", evtController.GetEvent)
 
-	admins := e.Group("/admins")
-	admins.GET("/requesting-users", userController.GetRequestingUser, lib.JWTMiddleware())
-	admins.PUT("/change-verification", userController.ApproveVerification, lib.JWTMiddleware())
+	admins := e.Group("/admins", lib.JWTMiddleware())
+	admins.GET("/requesting-users", userController.GetRequestingUser)
+	admins.PUT("/change-verification", userController.ChangeVerification)
 
+	// Auth
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)
-	e.GET("/verify", userController.Verify, lib.JWTMiddleware())
 	e.POST("/request-verified", userController.RequestVerified, lib.JWTMiddleware())
 	e.POST("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
-	e.GET("/verify-email/:user-id", userController.VerifyEmail)
 	e.GET("/verify-email/:user-id", userController.VerifyEmail)
 
 }

@@ -35,13 +35,13 @@ func NewEventService(
 
 }
 
-func (this *EventService) CreateEvent(userID string, evtD event_entity.EventDTO, image multipart.File) error {
+func (this *EventService) CreateEvent(userId string, eventD event_entity.EventDTO, image multipart.File) error {
 
-	evtD.UserID = userID
+	eventD.UserID = userId
 
-	fileExt := strings.ToLower(filepath.Ext(evtD.Image))
+	fileExt := strings.ToLower(filepath.Ext(eventD.Image))
 	newFilename := fmt.Sprintf("%s-%s%s", "event", lib.RandomString(8), fileExt)
-	evtD.Image = newFilename
+	eventD.Image = newFilename
 
 	var err error
 	err = this.storageSvc.UploadFile("event", newFilename, image)
@@ -49,20 +49,22 @@ func (this *EventService) CreateEvent(userID string, evtD event_entity.EventDTO,
 		return err
 	}
 
-	user, err := this.globalRepo.GetUser(evtD.UserID)
+	user, err := this.globalRepo.GetUser(eventD.UserID)
 	if err != nil {
 		return err
 	}
 	if user.Role != "user" {
-		evtD.Status = "publish"
-	}
-
-	evt, err := this.evtRepo.InsertEvent(evtD)
-
-	go this.updateRecommendedAction(evt)
-
-	if err != nil {
-		return err
+		eventD.Status = "publish"
+		evt, err := this.evtRepo.InsertEvent(eventD)
+		if err != nil {
+			return err
+		}
+		go this.updateRecommendedAction(evt)
+	} else {
+		_, err := this.evtRepo.InsertEvent(eventD)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -137,6 +139,49 @@ func (this *EventService) PublishEvent(userId, evtId string) error {
 	err = this.evtRepo.UpdateEventStatus(event, "publish")
 	if err != nil {
 		return err
+	}
+	go this.updateRecommendedAction(event)
+
+	return nil
+
+}
+
+func (this *EventService) UpdateEvent(userId, eventId string, payload dto.Event) error {
+
+	user, err := this.globalRepo.GetUser(userId)
+	if err != nil {
+		return err
+	}
+	event, err := this.evtRepo.FindOwnEvent(userId, eventId)
+	if err != nil {
+		return err
+	}
+
+	if user.Role != "user" {
+		event.Title = payload.Title
+		event.Location = payload.Location
+		event.LocationURL = payload.LocationURL
+		event.Description = payload.Description
+		event.RecommendedAction = lib.NewNullString("")
+		event.Status = "publish"
+
+		newEvent, err := this.evtRepo.UpdateEvent(event)
+		if err != nil {
+			return err
+		}
+		go this.updateRecommendedAction(newEvent)
+	} else {
+		event.Title = payload.Title
+		event.Location = payload.Location
+		event.LocationURL = payload.LocationURL
+		event.Description = payload.Description
+		event.RecommendedAction = lib.NewNullString("")
+		event.Status = "waiting"
+
+		_, err = this.evtRepo.UpdateEvent(event)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

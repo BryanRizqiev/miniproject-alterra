@@ -95,3 +95,40 @@ func (this *EventReposistory) UpdateEventStatus(event dto.Event, status string) 
 	return nil
 
 }
+
+func (this *EventReposistory) GetWaitingEvents(event dto.Event, status string) (dto.Event, error) {
+
+	var events dto.Event
+
+	err := this.db.Where("status = ?", "waiting").Find(&events).Error
+	if err != nil {
+		return dto.Event{}, err
+	}
+
+	return events, nil
+
+}
+
+func (this *EventReposistory) FindOwnEvent(userId, eventId string) (dto.Event, error) {
+
+	var event dto.Event
+
+	tx := this.db.Where("user_id", userId).First(&event, "id = ?", eventId)
+	if tx.Error != nil {
+		return dto.Event{}, tx.Error
+	}
+
+	return event, nil
+
+}
+
+func (this *EventReposistory) UpdateEvent(event dto.Event) (dto.Event, error) {
+
+	err := this.db.Save(&event).Error
+	if err != nil {
+		return dto.Event{}, err
+	}
+
+	return event, nil
+
+}

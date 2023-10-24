@@ -28,11 +28,14 @@ type (
 		GetEvent() ([]dto.Event, error)
 		UpdateEventStatus(event dto.Event, status string) error
 		FindEvent(eventId string) (dto.Event, error)
+		FindOwnEvent(userId, eventId string) (dto.Event, error)
+		UpdateEvent(event dto.Event) (dto.Event, error)
 	}
 
 	IEventService interface {
 		CreateEvent(userID string, evtDTO EventDTO, image multipart.File) error
 		GetEvent() ([]dto.Event, error)
 		PublishEvent(userId, evtId string) error
+		UpdateEvent(userId, eventId string, payload dto.Event) error
 	}
 )

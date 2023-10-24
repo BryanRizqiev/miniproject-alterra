@@ -3,6 +3,7 @@ package event_controller
 import (
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
+	"miniproject-alterra/module/dto"
 	event_request "miniproject-alterra/module/events/controller/request"
 	evt_response "miniproject-alterra/module/events/controller/response"
 	event_entity "miniproject-alterra/module/events/entity"
@@ -181,6 +182,62 @@ func (this *EventController) GetEvent(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, evt_response.GetEventResponse{
 		Message: "Success get event.",
 		Data:    presentations,
+	})
+
+}
+
+func (this *EventController) UpdateEvent(ctx echo.Context) error {
+
+	req := new(event_request.UpdateEventReq)
+
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "Request not valid.",
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return err
+	}
+
+	if req.LocationURL != "" && !validator.GoogleMapsURLValidator(req.LocationURL) {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "location_url not valid.",
+		})
+	}
+
+	userId, _ := lib.ExtractToken(ctx)
+	event := dto.Event{
+		Title:       req.Title,
+		Location:    req.Location,
+		LocationURL: lib.NewNullString(req.LocationURL),
+		Description: lib.NewNullString(req.Description),
+	}
+
+	err := this.evtSvc.UpdateEvent(userId, req.EventId, event)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when update event."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "record not found" {
+			errResMessage = "Event not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success update event.",
 	})
 
 }
