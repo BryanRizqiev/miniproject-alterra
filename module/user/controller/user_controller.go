@@ -117,17 +117,6 @@ func (this *UserController) Login(ctx echo.Context) error {
 
 }
 
-func (this *UserController) Verify(ctx echo.Context) error {
-
-	userID, email := lib.ExtractToken(ctx)
-	return ctx.JSON(http.StatusOK, user_response.VerifyResponse{
-		Message: "Success",
-		UserID:  userID,
-		Email:   email,
-	})
-
-}
-
 func (this *UserController) RequestVerified(ctx echo.Context) error {
 
 	userId, _ := lib.ExtractToken(ctx)
