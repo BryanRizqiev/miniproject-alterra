@@ -14,23 +14,38 @@ import (
 )
 
 type EventService struct {
-	evtRepo    event_entity.IEventReposistory
+	eventRepo  event_entity.IEventReposistory
 	storageSvc global_entity.StorageServiceInterface
 	openai     *global_service.OpenAIService
 	globalRepo global_entity.IGlobalRepository
 }
 
 func NewEventService(
-	evtRepo event_entity.IEventReposistory,
+	eventRepo event_entity.IEventReposistory,
 	storageSvc global_entity.StorageServiceInterface,
 	openai *global_service.OpenAIService,
 	globalRepo global_entity.IGlobalRepository) event_entity.IEventService {
 
 	return &EventService{
-		evtRepo:    evtRepo,
+		eventRepo:  eventRepo,
 		storageSvc: storageSvc,
 		openai:     openai,
 		globalRepo: globalRepo,
+	}
+
+}
+
+func (this *EventService) updateRecommendedAction(evt dto.Event) {
+
+	promt := fmt.Sprintf("%s, %s", evt.Title, evt.Description.String)
+	rec, err := this.openai.GetRecommendedAction(promt)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = this.eventRepo.UpdateRecommendedAction(evt, rec)
+	if err != nil {
+		panic(err.Error())
 	}
 
 }
@@ -55,13 +70,13 @@ func (this *EventService) CreateEvent(userId string, eventD event_entity.EventDT
 	}
 	if user.Role != "user" {
 		eventD.Status = "publish"
-		evt, err := this.evtRepo.InsertEvent(eventD)
+		evt, err := this.eventRepo.InsertEvent(eventD)
 		if err != nil {
 			return err
 		}
 		go this.updateRecommendedAction(evt)
 	} else {
-		_, err := this.evtRepo.InsertEvent(eventD)
+		_, err := this.eventRepo.InsertEvent(eventD)
 		if err != nil {
 			return err
 		}
@@ -71,24 +86,9 @@ func (this *EventService) CreateEvent(userId string, eventD event_entity.EventDT
 
 }
 
-func (this *EventService) updateRecommendedAction(evt dto.Event) {
-
-	promt := fmt.Sprintf("%s, %s", evt.Title, evt.Description.String)
-	rec, err := this.openai.GetRecommendedAction(promt)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	err = this.evtRepo.UpdateRecommendedAction(evt, rec)
-	if err != nil {
-		panic(err.Error())
-	}
-
-}
-
 func (this *EventService) GetEvent() ([]dto.Event, error) {
 
-	evts, err := this.evtRepo.GetEvent()
+	evts, err := this.eventRepo.GetEvent()
 	for i := range evts {
 		usr := dto.User{}
 		usr.Name = evts[i].CreatedBy.Name
@@ -121,6 +121,27 @@ func (this *EventService) GetEvent() ([]dto.Event, error) {
 
 }
 
+func (this *EventService) GetWaitingEvents(userId string) ([]dto.Event, error) {
+
+	var events []dto.Event
+
+	user, err := this.globalRepo.GetUser(userId)
+	if err != nil {
+		return events, err
+	}
+	if !lib.CheckIsAdmin(user) {
+		return events, errors.New("user not allowed")
+	}
+
+	events, err = this.eventRepo.GetWaitingEvents()
+	if err != nil {
+		return events, err
+	}
+
+	return events, nil
+
+}
+
 func (this *EventService) PublishEvent(userId, evtId string) error {
 
 	user, err := this.globalRepo.GetUser(userId)
@@ -132,11 +153,11 @@ func (this *EventService) PublishEvent(userId, evtId string) error {
 		return errors.New("user not allowed")
 	}
 
-	event, err := this.evtRepo.FindEvent(evtId)
+	event, err := this.eventRepo.FindEvent(evtId)
 	if err != nil {
 		return err
 	}
-	err = this.evtRepo.UpdateEventStatus(event, "publish")
+	err = this.eventRepo.UpdateEventStatus(event, "publish")
 	if err != nil {
 		return err
 	}
@@ -152,7 +173,7 @@ func (this *EventService) UpdateEvent(userId, eventId string, payload dto.Event)
 	if err != nil {
 		return err
 	}
-	event, err := this.evtRepo.FindOwnEvent(userId, eventId)
+	event, err := this.eventRepo.FindOwnEvent(userId, eventId)
 	if err != nil {
 		return err
 	}
@@ -165,7 +186,7 @@ func (this *EventService) UpdateEvent(userId, eventId string, payload dto.Event)
 		event.RecommendedAction = lib.NewNullString("")
 		event.Status = "publish"
 
-		newEvent, err := this.evtRepo.UpdateEvent(event)
+		newEvent, err := this.eventRepo.UpdateEvent(event)
 		if err != nil {
 			return err
 		}
@@ -178,7 +199,39 @@ func (this *EventService) UpdateEvent(userId, eventId string, payload dto.Event)
 		event.RecommendedAction = lib.NewNullString("")
 		event.Status = "waiting"
 
-		_, err = this.evtRepo.UpdateEvent(event)
+		_, err = this.eventRepo.UpdateEvent(event)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func (this *EventService) DeleteEvent(userId, eventId string) error {
+
+	user, err := this.globalRepo.GetUser(userId)
+	if err != nil {
+		return err
+	}
+	if lib.CheckIsAdmin(user) {
+		event, err := this.eventRepo.FindEvent(eventId)
+		if err != nil {
+			return err
+		}
+
+		err = this.eventRepo.DeleteEvent(event)
+		if err != nil {
+			return err
+		}
+	} else {
+		event, err := this.eventRepo.FindOwnEvent(userId, eventId)
+		if err != nil {
+			return err
+		}
+
+		err = this.eventRepo.DeleteEvent(event)
 		if err != nil {
 			return err
 		}

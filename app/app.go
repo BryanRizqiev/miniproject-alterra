@@ -83,9 +83,11 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	evidence.GET("/get/:event-id", evdController.GetEvidences, lib.JWTMiddleware())
 
 	events := e.Group("/events")
+	events.GET("/waiting", evtController.GetWaitingEvents, lib.JWTMiddleware())
 	events.POST("", evtController.CreateEvent, lib.JWTMiddleware())
 	events.PUT("", evtController.UpdateEvent, lib.JWTMiddleware())
 	events.PUT("/approve", evtController.ApproveEvent, lib.JWTMiddleware())
+	events.DELETE("/:event-id", evtController.DeleteEvent, lib.JWTMiddleware())
 
 	events.GET("", evtController.GetEvent)
 

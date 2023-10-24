@@ -11,6 +11,10 @@ type UpdateEventStatusReq struct {
 	EventId string `json:"event_id" form:"event_id" validate:"required,min=16"`
 }
 
+type DeleteEventReq struct {
+	EventId string `json:"event_id" form:"event_id" validate:"required,min=16"`
+}
+
 type UpdateEventReq struct {
 	Title       string `json:"title" form:"title" validate:"required,min=5"`
 	Location    string `json:"location" form:"location" validate:"required,min=5"`

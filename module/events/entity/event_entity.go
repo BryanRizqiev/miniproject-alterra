@@ -30,6 +30,8 @@ type (
 		FindEvent(eventId string) (dto.Event, error)
 		FindOwnEvent(userId, eventId string) (dto.Event, error)
 		UpdateEvent(event dto.Event) (dto.Event, error)
+		GetWaitingEvents() ([]dto.Event, error)
+		DeleteEvent(event dto.Event) error
 	}
 
 	IEventService interface {
@@ -37,5 +39,7 @@ type (
 		GetEvent() ([]dto.Event, error)
 		PublishEvent(userId, evtId string) error
 		UpdateEvent(userId, eventId string, payload dto.Event) error
+		GetWaitingEvents(userId string) ([]dto.Event, error)
+		DeleteEvent(userId, eventId string) error
 	}
 )

@@ -1,6 +1,7 @@
 package mysql_event_repository
 
 import (
+	"errors"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/module/dto"
 	event_entity "miniproject-alterra/module/events/entity"
@@ -96,13 +97,13 @@ func (this *EventReposistory) UpdateEventStatus(event dto.Event, status string) 
 
 }
 
-func (this *EventReposistory) GetWaitingEvents(event dto.Event, status string) (dto.Event, error) {
+func (this *EventReposistory) GetWaitingEvents() ([]dto.Event, error) {
 
-	var events dto.Event
+	var events []dto.Event
 
-	err := this.db.Where("status = ?", "waiting").Find(&events).Error
+	err := this.db.Where("status = ?", "waiting").Preload("CreatedBy").Find(&events).Error
 	if err != nil {
-		return dto.Event{}, err
+		return []dto.Event{}, err
 	}
 
 	return events, nil
@@ -130,5 +131,19 @@ func (this *EventReposistory) UpdateEvent(event dto.Event) (dto.Event, error) {
 	}
 
 	return event, nil
+
+}
+
+func (this *EventReposistory) DeleteEvent(event dto.Event) error {
+
+	tx := this.db.Delete(&event)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected < 1 {
+		return errors.New("nothing deleted")
+	}
+
+	return nil
 
 }
