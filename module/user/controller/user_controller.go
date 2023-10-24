@@ -259,7 +259,7 @@ func (this *UserController) GetRequestingUser(ctx echo.Context) error {
 
 }
 
-func (this *UserController) ApproveVerification(ctx echo.Context) error {
+func (this *UserController) ChangeVerification(ctx echo.Context) error {
 
 	req := new(user_request.ApproveVerificationReq)
 

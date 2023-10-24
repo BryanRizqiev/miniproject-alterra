@@ -3,6 +3,7 @@ package event_controller
 import (
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
+	"miniproject-alterra/module/dto"
 	event_request "miniproject-alterra/module/events/controller/request"
 	evt_response "miniproject-alterra/module/events/controller/response"
 	event_entity "miniproject-alterra/module/events/entity"
@@ -14,13 +15,13 @@ import (
 )
 
 type EventController struct {
-	evtSvc event_entity.IEventService
+	eventSvc event_entity.IEventService
 }
 
-func NewEventController(evtSvc event_entity.IEventService) *EventController {
+func NewEventController(eventSvc event_entity.IEventService) *EventController {
 
 	return &EventController{
-		evtSvc: evtSvc,
+		eventSvc: eventSvc,
 	}
 
 }
@@ -73,7 +74,7 @@ func (this *EventController) CreateEvent(ctx echo.Context) error {
 		Image:       file.Filename,
 	}
 
-	err = this.evtSvc.CreateEvent(userID, evtDTO, src)
+	err = this.eventSvc.CreateEvent(userID, evtDTO, src)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, global_response.StandartResponse{
 			Message: "Server error.",
@@ -101,7 +102,7 @@ func (this *EventController) ApproveEvent(ctx echo.Context) error {
 
 	userId, _ := lib.ExtractToken(ctx)
 
-	err := this.evtSvc.PublishEvent(userId, req.EventId)
+	err := this.eventSvc.PublishEvent(userId, req.EventId)
 	if err != nil {
 
 		errMessage := err.Error()
@@ -132,7 +133,7 @@ func (this *EventController) ApproveEvent(ctx echo.Context) error {
 
 func (this *EventController) GetEvent(ctx echo.Context) error {
 
-	evts, err := this.evtSvc.GetEvent()
+	evts, err := this.eventSvc.GetEvent()
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, evt_response.GetEventResponse{
 			Message: "Error when get event.",
@@ -181,6 +182,146 @@ func (this *EventController) GetEvent(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, evt_response.GetEventResponse{
 		Message: "Success get event.",
 		Data:    presentations,
+	})
+
+}
+
+func (this *EventController) GetWaitingEvents(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+	events, err := this.eventSvc.GetWaitingEvents(userId)
+
+	if err != nil {
+		errMessage := err.Error()
+		errResMessage := "Error when get waiting events."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		return ctx.JSON(errResStatus, evt_response.GetEventResponse{
+			Message: errResMessage,
+		})
+	}
+
+	var eventPresentations []evt_response.EventPresentation
+	for _, event := range events {
+		verfied := true
+		if event.CreatedBy.Role == "user" {
+			verfied = false
+		}
+
+		eventPresentation := evt_response.EventPresentation{
+			Id:                event.Id,
+			Title:             event.Title,
+			Location:          event.Location,
+			LocationURL:       event.LocationURL.String,
+			Description:       event.Description.String,
+			Image:             event.Image.String,
+			RecommendedAction: event.RecommendedAction.String,
+			CreatedBy:         event.CreatedBy.Name,
+			Verified:          verfied,
+			CreatedAt:         event.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
+		}
+
+		eventPresentations = append(eventPresentations, eventPresentation)
+	}
+
+	return ctx.JSON(http.StatusOK, evt_response.GetEventResponse{
+		Message: "Success get waiting events.",
+		Data:    eventPresentations,
+	})
+
+}
+
+func (this *EventController) UpdateEvent(ctx echo.Context) error {
+
+	req := new(event_request.UpdateEventReq)
+
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "Request not valid.",
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return err
+	}
+
+	if req.LocationURL != "" && !validator.GoogleMapsURLValidator(req.LocationURL) {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "location_url not valid.",
+		})
+	}
+
+	userId, _ := lib.ExtractToken(ctx)
+	event := dto.Event{
+		Title:       req.Title,
+		Location:    req.Location,
+		LocationURL: lib.NewNullString(req.LocationURL),
+		Description: lib.NewNullString(req.Description),
+	}
+
+	err := this.eventSvc.UpdateEvent(userId, req.EventId, event)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when update event."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "record not found" {
+			errResMessage = "Event not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success update event.",
+	})
+
+}
+
+func (this *EventController) DeleteEvent(ctx echo.Context) error {
+
+	eventId := ctx.Param("event-id")
+	userId, _ := lib.ExtractToken(ctx)
+
+	err := this.eventSvc.DeleteEvent(userId, eventId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when delete event."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "Event not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		if errMessage == "nothing deleted" {
+			errResMessage = "Nothing deleted."
+			errResStatus = http.StatusBadRequest
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success delete event.",
 	})
 
 }

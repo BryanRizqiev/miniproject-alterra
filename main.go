@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -19,6 +20,7 @@ func main() {
 
 	e := echo.New()
 	e.Validator = &app_validator.CustomValidator{Validator: validator.New()}
+	e.Pre(middleware.RemoveTrailingSlash())
 
 	app.Bootstrap(db, e, cfg)
 
