@@ -49,12 +49,6 @@ func (this *UserService) Login(user dto.User) (string, error) {
 
 }
 
-func (this *UserService) GetAllUser() ([]dto.User, error) {
-
-	panic("unimplemented")
-
-}
-
 func (this *UserService) Register(user dto.User) error {
 
 	encryptedPassword, _ := lib.BcryptHashPassword(user.Password)
@@ -172,5 +166,25 @@ func (this *UserService) ChangeUserRole(reqUserId string, userId string, role st
 	}
 
 	return nil
+
+}
+
+func (this *UserService) GetAllUser(userId string) ([]dto.User, error) {
+
+	user, err := this.userRepo.FindUser(userId)
+	if err != nil {
+		return []dto.User{}, nil
+	}
+
+	if !lib.CheckIsAdmin(user) {
+		return []dto.User{}, errors.New("user not allowed")
+	}
+
+	users, err := this.userRepo.GetAllUser()
+	if err != nil {
+		return []dto.User{}, nil
+	}
+
+	return users, nil
 
 }

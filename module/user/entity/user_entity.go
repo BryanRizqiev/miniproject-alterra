@@ -13,7 +13,7 @@ type (
 		RequestVerified(userId string) error
 		RequestVerifyEmail(userId string) error
 
-		GetAllUser() ([]dto.User, error)
+		GetAllUser(userId string) ([]dto.User, error)
 		GetRequestingUser(userId string) ([]dto.User, error)
 		ChangeUserRole(reqUserId string, userId string, role string) error
 	}

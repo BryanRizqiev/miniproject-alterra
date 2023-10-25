@@ -92,6 +92,7 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	admin.GET("/events/waiting", eventController.GetWaitingEvents)
 	admin.PUT("/events/publish/:event-id", eventController.PublishEvent)
 	admin.PUT("/events/takedown/:event-id", eventController.TakedownEvent)
+	admin.GET("/users", userController.GetAllUser)
 	admin.GET("/users/requesting-users", userController.GetRequestingUser)
 	admin.PUT("/users/change-role/:user-id", userController.ChangeUserRole)
 

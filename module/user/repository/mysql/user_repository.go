@@ -37,7 +37,13 @@ func (this *UserRepository) GetUserByEmail(email string) (dto.User, error) {
 
 func (this *UserRepository) GetAllUser() ([]dto.User, error) {
 
-	panic("unimplemented")
+	var users []dto.User
+	err := this.db.Not("role = ?", "admin").Find(&users).Error
+	if err != nil {
+		return []dto.User{}, nil
+	}
+
+	return users, nil
 
 }
 

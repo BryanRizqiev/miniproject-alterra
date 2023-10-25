@@ -320,3 +320,60 @@ func (this *UserController) ChangeUserRole(ctx echo.Context) error {
 	})
 
 }
+
+func (this *UserController) GetAllUser(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+	users, err := this.userService.GetAllUser(userId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when get users."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "record not found" {
+			errResMessage = "Users not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponseWithData{
+			Message: errResMessage,
+		})
+
+	}
+
+	var userPresentations []user_response.UserPresentataion
+	for _, user := range users {
+		userDOB, _ := time.Parse(time.RFC3339, user.DOB.String)
+		verifiedEmailAt := ""
+		if user.VerifiedEmailAt.Valid {
+			verifiedEmailAt = user.VerifiedEmailAt.Time.Format(lib.DATE_WITH_DAY_FORMAT)
+		}
+
+		userPresentataion := user_response.UserPresentataion{
+			Id:              user.Id,
+			Name:            user.Name,
+			Email:           user.Email,
+			DOB:             userDOB.Format(time.DateOnly),
+			Address:         user.Address.String,
+			Phone:           user.Phone.String,
+			Photo:           user.Photo.String,
+			Role:            user.Role,
+			CreatedAt:       user.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
+			RequestVerified: user.RequestVerified,
+			VerifiedEmailAt: verifiedEmailAt,
+		}
+		userPresentations = append(userPresentations, userPresentataion)
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponseWithData{
+		Message: "Success get users.",
+		Data:    userPresentations,
+	})
+
+}
