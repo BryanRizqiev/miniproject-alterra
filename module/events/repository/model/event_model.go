@@ -9,7 +9,7 @@ import (
 type Event struct {
 	*lib.Base
 
-	ID                string
+	Id                string
 	Title             string
 	Location          string
 	LocationURL       sql.NullString `gorm:"column:location_url"`
@@ -17,6 +17,6 @@ type Event struct {
 	Image             sql.NullString
 	Status            string `gorm:"default:waiting"`
 	RecommendedAction sql.NullString
-	UserID            string
-	CreatedBy         user_model.User `gorm:"foreignKey:UserID"`
+	UserId            string
+	CreatedBy         user_model.User `gorm:"foreignKey:UserId"`
 }

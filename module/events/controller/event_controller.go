@@ -42,7 +42,7 @@ func (this *EventController) CreateEvent(ctx echo.Context) error {
 	file, err := ctx.FormFile("image")
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
-			Message: "Request not valid.",
+			Message: "image required.",
 		})
 	}
 	src, err := file.Open()
@@ -87,26 +87,16 @@ func (this *EventController) CreateEvent(ctx echo.Context) error {
 
 }
 
-func (this *EventController) ApproveEvent(ctx echo.Context) error {
+func (this *EventController) PublishEvent(ctx echo.Context) error {
 
-	req := new(event_request.UpdateEventStatusReq)
-
-	if err := ctx.Bind(req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
-			Message: "Request not valid.",
-		})
-	}
-	if err := ctx.Validate(req); err != nil {
-		return err
-	}
-
+	eventId := ctx.Param("event-id")
 	userId, _ := lib.ExtractToken(ctx)
 
-	err := this.eventSvc.PublishEvent(userId, req.EventId)
+	err := this.eventSvc.PublishEvent(userId, eventId)
 	if err != nil {
 
 		errMessage := err.Error()
-		errResMessage := "Error when approve event."
+		errResMessage := "Error when publish event."
 		errResStatus := http.StatusInternalServerError
 
 		if errMessage == "user not allowed" {
@@ -126,7 +116,41 @@ func (this *EventController) ApproveEvent(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
-		Message: "Success approve event.",
+		Message: "Success publish event.",
+	})
+
+}
+
+func (this *EventController) TakedownEvent(ctx echo.Context) error {
+
+	eventId := ctx.Param("event-id")
+	userId, _ := lib.ExtractToken(ctx)
+
+	err := this.eventSvc.TakedownEvent(userId, eventId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when takedown event."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "record not found" {
+			errResMessage = "Event not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success takedown event.",
 	})
 
 }
@@ -238,6 +262,7 @@ func (this *EventController) GetWaitingEvents(ctx echo.Context) error {
 
 func (this *EventController) UpdateEvent(ctx echo.Context) error {
 
+	eventId := ctx.Param("event-id")
 	req := new(event_request.UpdateEventReq)
 
 	if err := ctx.Bind(req); err != nil {
@@ -263,7 +288,7 @@ func (this *EventController) UpdateEvent(ctx echo.Context) error {
 		Description: lib.NewNullString(req.Description),
 	}
 
-	err := this.eventSvc.UpdateEvent(userId, req.EventId, event)
+	err := this.eventSvc.UpdateEvent(userId, eventId, event)
 	if err != nil {
 
 		errMessage := err.Error()
@@ -288,6 +313,48 @@ func (this *EventController) UpdateEvent(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
 		Message: "Success update event.",
+	})
+
+}
+
+func (this *EventController) UpdateImage(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+	eventId := ctx.Param("event-id")
+
+	file, err := ctx.FormFile("image")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "image required.",
+		})
+	}
+	src, err := file.Open()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, global_response.StandartResponse{
+			Message: "Error when read file.",
+		})
+	}
+
+	err = this.eventSvc.UpdateImage(userId, eventId, file.Filename, src)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when update event image."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "Event not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success update event image.",
 	})
 
 }

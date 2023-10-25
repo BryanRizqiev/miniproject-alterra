@@ -44,7 +44,7 @@ func (this *UserRepository) GetAllUser() ([]dto.User, error) {
 func (this *UserRepository) InsertUser(user dto.User) error {
 
 	userInsert := user_model.User{
-		ID:       lib.NewUuid(),
+		Id:       lib.NewUuid(),
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: user.Password,

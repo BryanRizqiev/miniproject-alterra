@@ -8,7 +8,7 @@ import (
 )
 
 type EventDTO struct {
-	ID                string
+	Id                string
 	Title             string
 	Location          string
 	LocationURL       string
@@ -16,15 +16,15 @@ type EventDTO struct {
 	Image             string
 	Status            string
 	RecommendedAction string
-	UserID            string
+	UserId            string
 	CreatedBy         user_model.User
 	CreatedAt         time.Time
 }
 
 type (
 	IEventReposistory interface {
-		UpdateRecommendedAction(evt dto.Event, value string) error
-		InsertEvent(evtD EventDTO) (dto.Event, error)
+		InsertEvent(eventD EventDTO) (dto.Event, error)
+		UpdateRecommendedAction(event dto.Event, value string) error
 		GetEvent() ([]dto.Event, error)
 		UpdateEventStatus(event dto.Event, status string) error
 		FindEvent(eventId string) (dto.Event, error)
@@ -32,14 +32,17 @@ type (
 		UpdateEvent(event dto.Event) (dto.Event, error)
 		GetWaitingEvents() ([]dto.Event, error)
 		DeleteEvent(event dto.Event) error
+		UpdateImage(fileName string, event dto.Event) error
 	}
 
 	IEventService interface {
-		CreateEvent(userID string, evtDTO EventDTO, image multipart.File) error
+		CreateEvent(userId string, eventDTO EventDTO, image multipart.File) error
 		GetEvent() ([]dto.Event, error)
-		PublishEvent(userId, evtId string) error
+		PublishEvent(userId, eventId string) error
 		UpdateEvent(userId, eventId string, payload dto.Event) error
 		GetWaitingEvents(userId string) ([]dto.Event, error)
+		UpdateImage(userId, eventId, filename string, image multipart.File) error
 		DeleteEvent(userId, eventId string) error
+		TakedownEvent(userId, eventId string) error
 	}
 )
