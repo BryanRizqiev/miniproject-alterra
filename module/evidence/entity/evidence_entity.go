@@ -5,7 +5,6 @@ import (
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/module/dto"
 	event_entity "miniproject-alterra/module/events/entity"
-	user_entity "miniproject-alterra/module/user/entity"
 	"time"
 )
 
@@ -14,7 +13,6 @@ type EvidenceDTO struct {
 	Content   string
 	Image     string
 	UserId    string
-	CreatedBy user_entity.UserDTO
 	EventId   string
 	Event     event_entity.EventDTO
 	CreatedAt time.Time

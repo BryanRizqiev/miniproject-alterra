@@ -97,8 +97,8 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	// Auth
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)
-	e.POST("/request-verified", userController.RequestVerified, lib.JWTMiddleware())
 	e.POST("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
 	e.GET("/verify-email/:user-id", userController.VerifyEmail)
+	e.POST("/request-verify-user", userController.RequestVerified, lib.JWTMiddleware())
 
 }
