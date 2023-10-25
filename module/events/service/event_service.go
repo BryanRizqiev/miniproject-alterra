@@ -50,13 +50,11 @@ func (this *EventService) updateRecommendedAction(evt dto.Event) {
 
 }
 
-func (this *EventService) CreateEvent(userId string, eventD event_entity.EventDTO, image multipart.File) error {
+func (this *EventService) CreateEvent(userId string, eventDTO event_entity.EventDTO, image multipart.File) error {
 
-	eventD.UserID = userId
-
-	fileExt := strings.ToLower(filepath.Ext(eventD.Image))
+	fileExt := strings.ToLower(filepath.Ext(eventDTO.Image))
 	newFilename := fmt.Sprintf("%s-%s%s", "event", lib.RandomString(8), fileExt)
-	eventD.Image = newFilename
+	eventDTO.Image = newFilename
 
 	var err error
 	err = this.storageSvc.UploadFile("event", newFilename, image)
@@ -64,19 +62,21 @@ func (this *EventService) CreateEvent(userId string, eventD event_entity.EventDT
 		return err
 	}
 
-	user, err := this.globalRepo.GetUser(eventD.UserID)
+	user, err := this.globalRepo.GetUser(userId)
 	if err != nil {
 		return err
 	}
+
+	eventDTO.UserId = userId
 	if user.Role != "user" {
-		eventD.Status = "publish"
-		evt, err := this.eventRepo.InsertEvent(eventD)
+		eventDTO.Status = "publish"
+		event, err := this.eventRepo.InsertEvent(eventDTO)
 		if err != nil {
 			return err
 		}
-		go this.updateRecommendedAction(evt)
+		go this.updateRecommendedAction(event)
 	} else {
-		_, err := this.eventRepo.InsertEvent(eventD)
+		_, err := this.eventRepo.InsertEvent(eventDTO)
 		if err != nil {
 			return err
 		}
