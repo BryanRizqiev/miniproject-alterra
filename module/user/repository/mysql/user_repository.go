@@ -126,7 +126,7 @@ func (this *UserRepository) UpdateUserRole(userId string, role string) error {
 		return tx.Error
 	}
 
-	tx = this.db.Model(&user).Update("role", role)
+	tx = this.db.Model(&user).Update("role", role).Update("request_verified", "default")
 	if tx.Error != nil {
 		return tx.Error
 	}
