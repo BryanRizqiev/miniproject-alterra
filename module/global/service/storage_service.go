@@ -36,12 +36,13 @@ func (this *StorageService) UploadFile(bucketName string, fileName string, body 
 	return err
 }
 
-func (*StorageService) DeleteFile(bucketName string, fileName string) error {
-	panic("unimplemented")
-}
+func (this *StorageService) DeleteFile(bucketName string, fileName string) error {
+	_, err := this.client.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(fileName),
+	})
 
-func (*StorageService) DownlaodFile(bucketName string, key string, downloadPath string) error {
-	panic("unimplemented")
+	return err
 }
 
 func (this *StorageService) GetUrl(bucketName string, fileName string) (string, error) {

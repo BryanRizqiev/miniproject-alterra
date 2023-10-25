@@ -56,46 +56,47 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	s3Client := s3.New(sess)
 	uploader := s3manager.NewUploader(sess)
 	downloader := s3manager.NewDownloader(sess)
+	storageService := global_service.NewStorageService(uploader, downloader, s3Client)
 
 	emailService := global_service.NewEmailService(config)
-	storageService := global_service.NewStorageService(uploader, downloader, s3Client)
+	globalRepo := global_repo.NewGlobalRepo(db)
+	openaiClient := openai.NewClient(os.Getenv("API_KEY"))
+	openaiSvc := global_service.NewOpenAIService(openaiClient, openai.GPT3Dot5Turbo)
 
 	userRepository := mysql_user_repository.NewUserRepository(db)
 	userService := user_service.NewUserService(userRepository, emailService, config)
 	userController := user_controller.NewUserController(userService, emailService, storageService)
 
-	globalRepo := global_repo.NewGlobalRepo(db)
+	eventRepo := mysql_event_repository.NewEventRepository(db)
+	eventSvc := event_service.NewEventService(eventRepo, storageService, openaiSvc, globalRepo)
+	eventController := event_controller.NewEventController(eventSvc)
 
-	evtRepo := mysql_event_repository.NewEventRepository(db)
-	openaiClient := openai.NewClient(os.Getenv("API_KEY"))
-	openaiSvc := global_service.NewOpenAIService(openaiClient, openai.GPT3Dot5Turbo)
-	evtSvc := event_service.NewEventService(evtRepo, storageService, openaiSvc, globalRepo)
-	evtController := event_controller.NewEventController(evtSvc)
-
-	evdRepo := mysql_evd_repo.NewEvidenceRepository(db)
-	evdSvc := evd_svc.NewEvidenceService(evdRepo, storageService)
-	evdController := evd_controller.NewEvidenceController(evdSvc)
+	evidenceRepo := mysql_evd_repo.NewEvidenceRepository(db)
+	evidenceSvc := evd_svc.NewEvidenceService(evidenceRepo, storageService)
+	evidenceController := evd_controller.NewEvidenceController(evidenceSvc)
 
 	// Route
 
 	evidence := e.Group("/evidences")
-	evidence.POST("/create", evdController.CreateEvidence, lib.JWTMiddleware())
-	evidence.GET("/get/:event-id", evdController.GetEvidences, lib.JWTMiddleware())
+	evidence.POST("/create", evidenceController.CreateEvidence, lib.JWTMiddleware())
+	evidence.GET("/get/:event-id", evidenceController.GetEvidences, lib.JWTMiddleware())
 
 	events := e.Group("/events")
-	events.GET("/waiting", evtController.GetWaitingEvents, lib.JWTMiddleware())
-	events.POST("", evtController.CreateEvent, lib.JWTMiddleware())
-	events.PUT("", evtController.UpdateEvent, lib.JWTMiddleware())
-	events.PUT("/approve", evtController.ApproveEvent, lib.JWTMiddleware())
-	events.DELETE("/:event-id", evtController.DeleteEvent, lib.JWTMiddleware())
-
-	events.GET("", evtController.GetEvent)
+	events.GET("", eventController.GetEvent)
+	events.POST("", eventController.CreateEvent, lib.JWTMiddleware())
+	events.PUT("/update/:event-id", eventController.UpdateEvent, lib.JWTMiddleware())
+	events.PUT("/update-image/:event-id", eventController.UpdateImage, lib.JWTMiddleware())
+	events.DELETE("delete/:event-id", eventController.DeleteEvent, lib.JWTMiddleware())
 
 	admin := e.Group("/admin", lib.JWTMiddleware())
+	admin.GET("/events/waiting", eventController.GetWaitingEvents)
+	admin.PUT("/events/publish/:event-id", eventController.PublishEvent)
+	admin.PUT("/events/takedown/:event-id", eventController.TakedownEvent)
 	admin.GET("/users/requesting-users", userController.GetRequestingUser)
 	admin.PUT("/users/change-role/:user-id", userController.ChangeUserRole)
 
 	// Auth
+
 	e.POST("/register", userController.Register)
 	e.POST("/login", userController.Login)
 	e.POST("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())

@@ -16,7 +16,7 @@ type Base struct {
 type Evidence struct {
 	*Base
 
-	Id        string
+	Id        string `gorm:"primaryKey"`
 	Content   string
 	Image     string
 	CreatedBy string

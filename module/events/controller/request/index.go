@@ -20,5 +20,4 @@ type UpdateEventReq struct {
 	Location    string `json:"location" form:"location" validate:"required,min=5"`
 	LocationURL string `json:"location_url" form:"location_url"`
 	Description string `json:"description" form:"description"`
-	EventId     string `json:"event_id" form:"event_id" validate:"required,min=16"`
 }

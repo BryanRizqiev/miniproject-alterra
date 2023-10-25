@@ -21,26 +21,26 @@ func NewEventRepository(db *gorm.DB) event_entity.IEventReposistory {
 
 }
 
-func (this *EventReposistory) InsertEvent(evtD event_entity.EventDTO) (dto.Event, error) {
+func (this *EventReposistory) InsertEvent(eventDTO event_entity.EventDTO) (dto.Event, error) {
 
-	evt := dto.Event{
+	event := dto.Event{
 		Id:          lib.NewUuid(),
-		Title:       evtD.Title,
-		Location:    evtD.Location,
-		LocationURL: lib.NewNullString(evtD.LocationURL),
-		Description: lib.NewNullString(evtD.Description),
-		UserId:      evtD.UserID,
-		Image:       lib.NewNullString(evtD.Image),
-		Status:      lib.InsertDefaultValue("waiting", evtD.Status),
+		Title:       eventDTO.Title,
+		Location:    eventDTO.Location,
+		LocationURL: lib.NewNullString(eventDTO.LocationURL),
+		Description: lib.NewNullString(eventDTO.Description),
+		UserId:      eventDTO.UserId,
+		Image:       lib.NewNullString(eventDTO.Image),
+		Status:      lib.InsertDefaultValue("waiting", eventDTO.Status),
 	}
 
-	tx := this.db.Create(&evt)
+	tx := this.db.Create(&event)
 
 	if tx.Error != nil {
 		return dto.Event{}, tx.Error
 	}
 
-	return evt, nil
+	return event, nil
 
 }
 
@@ -131,6 +131,17 @@ func (this *EventReposistory) UpdateEvent(event dto.Event) (dto.Event, error) {
 	}
 
 	return event, nil
+
+}
+
+func (this *EventReposistory) UpdateImage(fileName string, event dto.Event) error {
+
+	err := this.db.Model(&event).Update("image", fileName).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
