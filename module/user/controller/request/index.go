@@ -15,6 +15,5 @@ type LoginRequest struct {
 }
 
 type ApproveVerificationReq struct {
-	UserId string `json:"user_id" form:"user_id" validate:"required,min=16"`
-	Role   string `json:"role" form:"role" validate:"required,min=4,oneof=user verified_user"`
+	Role string `json:"role" form:"role" validate:"required,min=4,oneof=user verified_user"`
 }
