@@ -32,6 +32,7 @@ type (
 		UpdateEvent(event dto.Event) (dto.Event, error)
 		GetWaitingEvents() ([]dto.Event, error)
 		DeleteEvent(event dto.Event) error
+		UpdateImage(fileName string, event dto.Event) error
 	}
 
 	IEventService interface {
@@ -40,6 +41,8 @@ type (
 		PublishEvent(userId, evtId string) error
 		UpdateEvent(userId, eventId string, payload dto.Event) error
 		GetWaitingEvents(userId string) ([]dto.Event, error)
+		UpdateImage(userId, eventId, filename string, image multipart.File) error
 		DeleteEvent(userId, eventId string) error
+		TakedownEvent(userId, evtId string) error
 	}
 )

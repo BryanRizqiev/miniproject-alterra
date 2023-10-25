@@ -134,6 +134,17 @@ func (this *EventReposistory) UpdateEvent(event dto.Event) (dto.Event, error) {
 
 }
 
+func (this *EventReposistory) UpdateImage(fileName string, event dto.Event) error {
+
+	err := this.db.Model(&event).Update("image", fileName).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func (this *EventReposistory) DeleteEvent(event dto.Event) error {
 
 	tx := this.db.Delete(&event)

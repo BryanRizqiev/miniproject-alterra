@@ -24,7 +24,6 @@ type (
 
 	StorageServiceInterface interface {
 		UploadFile(bucketName string, fileName string, body io.Reader) error
-		DownlaodFile(bucketName string, key string, downloadPath string) error
 		DeleteFile(bucketName string, fileName string) error
 		GetUrl(bucketName string, fileName string) (string, error)
 	}
