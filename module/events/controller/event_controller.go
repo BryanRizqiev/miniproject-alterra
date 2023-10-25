@@ -89,20 +89,10 @@ func (this *EventController) CreateEvent(ctx echo.Context) error {
 
 func (this *EventController) ApproveEvent(ctx echo.Context) error {
 
-	req := new(event_request.UpdateEventStatusReq)
-
-	if err := ctx.Bind(req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
-			Message: "Request not valid.",
-		})
-	}
-	if err := ctx.Validate(req); err != nil {
-		return err
-	}
-
+	eventId := ctx.Param("event-id")
 	userId, _ := lib.ExtractToken(ctx)
 
-	err := this.eventSvc.PublishEvent(userId, req.EventId)
+	err := this.eventSvc.PublishEvent(userId, eventId)
 	if err != nil {
 
 		errMessage := err.Error()
@@ -238,6 +228,7 @@ func (this *EventController) GetWaitingEvents(ctx echo.Context) error {
 
 func (this *EventController) UpdateEvent(ctx echo.Context) error {
 
+	eventId := ctx.Param("event-id")
 	req := new(event_request.UpdateEventReq)
 
 	if err := ctx.Bind(req); err != nil {
@@ -263,7 +254,7 @@ func (this *EventController) UpdateEvent(ctx echo.Context) error {
 		Description: lib.NewNullString(req.Description),
 	}
 
-	err := this.eventSvc.UpdateEvent(userId, req.EventId, event)
+	err := this.eventSvc.UpdateEvent(userId, eventId, event)
 	if err != nil {
 
 		errMessage := err.Error()

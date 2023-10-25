@@ -83,17 +83,16 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 	evidence.GET("/get/:event-id", evdController.GetEvidences, lib.JWTMiddleware())
 
 	events := e.Group("/events")
-	events.GET("/waiting", evtController.GetWaitingEvents, lib.JWTMiddleware())
-	events.POST("", evtController.CreateEvent, lib.JWTMiddleware())
-	events.PUT("", evtController.UpdateEvent, lib.JWTMiddleware())
-	events.PUT("/approve", evtController.ApproveEvent, lib.JWTMiddleware())
-	events.DELETE("/:event-id", evtController.DeleteEvent, lib.JWTMiddleware())
-
 	events.GET("", evtController.GetEvent)
+	events.POST("", evtController.CreateEvent, lib.JWTMiddleware())
+	events.PUT("/update/:event-id", evtController.UpdateEvent, lib.JWTMiddleware())
+	events.DELETE("delete/:event-id", evtController.DeleteEvent, lib.JWTMiddleware())
 
-	admins := e.Group("/admins", lib.JWTMiddleware())
-	admins.GET("/requesting-users", userController.GetRequestingUser)
-	admins.PUT("/change-verification", userController.ChangeVerification)
+	admin := e.Group("/admin", lib.JWTMiddleware())
+	admin.GET("/events/waiting", evtController.GetWaitingEvents)
+	admin.PUT("/events/approve/:event-id", evtController.ApproveEvent)
+	admin.GET("/users/requesting-users", userController.GetRequestingUser)
+	admin.PUT("/users/change-role/:user-id", userController.ChangeUserRole)
 
 	// Auth
 	e.POST("/register", userController.Register)
