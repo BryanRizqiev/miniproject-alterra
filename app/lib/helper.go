@@ -1,6 +1,13 @@
 package lib
 
-import "math/rand"
+import (
+	"bytes"
+	"html/template"
+	"math/rand"
+	"miniproject-alterra/module/dto"
+)
+
+const DATE_WITH_DAY_FORMAT = "2006-01-02 15:04:05 Monday"
 
 func Contains(arr []string, str string) bool {
 	for _, s := range arr {
@@ -20,5 +27,27 @@ func RandomString(n int) string {
 		s[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(s)
+
+}
+
+func ParseTemplate(templateFileName string, data interface{}) (string, error) {
+	t, err := template.ParseFiles(templateFileName)
+	if err != nil {
+		return "", err
+	}
+	buf := new(bytes.Buffer)
+	if err = t.Execute(buf, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func CheckIsAdmin(user dto.User) bool {
+
+	if user.Role == "admin" {
+		return true
+	}
+
+	return false
 
 }

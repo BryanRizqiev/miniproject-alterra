@@ -13,3 +13,7 @@ type LoginRequest struct {
 	Email    string `json:"email" form:"email" validate:"required,email,min=3"`
 	Password string `json:"password" form:"password" validate:"required,min=3"`
 }
+
+type ApproveVerificationReq struct {
+	Role string `json:"role" form:"role" validate:"required,min=4,oneof=user verified_user"`
+}

@@ -1,6 +1,14 @@
 package global_entity
 
-import "io"
+import (
+	"io"
+	"miniproject-alterra/module/dto"
+)
+
+type EmailDataFormat struct {
+	Name string
+	URL  string
+}
 
 type SendEmailFormat struct {
 	To      string
@@ -16,8 +24,11 @@ type (
 
 	StorageServiceInterface interface {
 		UploadFile(bucketName string, fileName string, body io.Reader) error
-		DownlaodFile(bucketName string, key string, downloadPath string) error
 		DeleteFile(bucketName string, fileName string) error
 		GetUrl(bucketName string, fileName string) (string, error)
+	}
+
+	IGlobalRepository interface {
+		GetUser(userId string) (dto.User, error)
 	}
 )
