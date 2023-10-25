@@ -2,15 +2,15 @@ package user_reqres
 
 type (
 	UserPresentataion struct {
-		Id        string
-		Name      string
-		Email     string
-		DOB       string
-		Address   string
-		Phone     string
-		Photo     string
-		Role      string
-		CreatedAt string
+		Id        string `json:"id"`
+		Name      string `json:"name"`
+		Email     string `json:"email"`
+		DOB       string `json:"message"`
+		Address   string `json:"address"`
+		Phone     string `json:"phone"`
+		Photo     string `json:"photo"`
+		Role      string `json:"role"`
+		CreatedAt string `json:"created_at"`
 	}
 )
 
@@ -31,7 +31,7 @@ type (
 	}
 
 	GetRequestingUserRes struct {
-		Message string
-		Data    []UserPresentataion
+		Message string              `json:"message"`
+		Data    []UserPresentataion `json:"data"`
 	}
 )
