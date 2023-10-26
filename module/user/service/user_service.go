@@ -188,3 +188,66 @@ func (this *UserService) GetAllUser(userId string) ([]dto.User, error) {
 	return users, nil
 
 }
+
+func (this *UserService) UpdateUser(userId string, payload dto.User) error {
+
+	user, err := this.userRepo.FindUser(userId)
+	if err != nil {
+		return err
+	}
+
+	user.Name = payload.Name
+	user.Address = payload.Address
+	user.DOB = payload.DOB
+	user.Phone = payload.Phone
+
+	err = this.userRepo.UpdateUser(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (this *UserService) DeleteUser(reqUserId, userId string) error {
+
+	user, err := this.userRepo.FindUser(reqUserId)
+	if err != nil {
+		return err
+	}
+	if !lib.CheckIsAdmin(user) {
+		return errors.New("user not allowed")
+	}
+
+	user, err = this.userRepo.FindUser(userId)
+	if err != nil {
+		return err
+	}
+	err = this.userRepo.DeleteUser(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (this *UserService) UserSelfDelete(userId string) error {
+
+	user, err := this.userRepo.FindUser(userId)
+	if err != nil {
+		return err
+	}
+	if lib.CheckIsAdmin(user) {
+		return errors.New("user not allowed")
+	}
+
+	err = this.userRepo.DeleteUser(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

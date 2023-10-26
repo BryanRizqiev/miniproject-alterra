@@ -16,6 +16,9 @@ type (
 		GetAllUser(userId string) ([]dto.User, error)
 		GetRequestingUser(userId string) ([]dto.User, error)
 		ChangeUserRole(reqUserId string, userId string, role string) error
+		UpdateUser(userId string, payload dto.User) error
+		DeleteUser(reqUserId, userId string) error
+		UserSelfDelete(userId string) error
 	}
 
 	UserRepositoryInterface interface {
@@ -30,5 +33,7 @@ type (
 		UpdateUserRole(userId string, role string) error
 		FindUser(userId string) (dto.User, error)
 		GetRequestingUser() ([]dto.User, error)
+		UpdateUser(user dto.User) error
+		DeleteUser(user dto.User) error
 	}
 )

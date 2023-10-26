@@ -166,3 +166,28 @@ func (this *UserRepository) GetRequestingUser() ([]dto.User, error) {
 	return users, nil
 
 }
+
+func (this *UserRepository) UpdateUser(user dto.User) error {
+
+	err := this.db.Save(&user).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (this *UserRepository) DeleteUser(user dto.User) error {
+
+	tx := this.db.Delete(&user)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected < 1 {
+		return errors.New("nothing deleted")
+	}
+
+	return nil
+
+}

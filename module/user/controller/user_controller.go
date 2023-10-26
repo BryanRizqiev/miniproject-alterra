@@ -64,6 +64,7 @@ func (this *UserController) Register(ctx echo.Context) error {
 		Password: req.Password,
 		Address:  lib.NewNullString(req.Address),
 		DOB:      lib.NewNullString(req.DOB),
+		Phone:    lib.NewNullString(req.Phone),
 	}
 
 	err := this.userService.Register(user)
@@ -374,6 +375,138 @@ func (this *UserController) GetAllUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, global_response.StandartResponseWithData{
 		Message: "Success get users.",
 		Data:    userPresentations,
+	})
+
+}
+
+func (this *UserController) UpdateUser(ctx echo.Context) error {
+
+	req := new(user_request.UpdateRequest)
+
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "Request not valid",
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return err
+	}
+	if req.DOB != "" {
+		dob, err := time.Parse("2006-01-02", req.DOB)
+		err = validator.DateValidation(err, dob)
+		if err != nil {
+			return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+				Message: "Date of birth not valid.",
+			})
+		}
+	}
+
+	userId, _ := lib.ExtractToken(ctx)
+
+	user := dto.User{
+		Name:    req.Name,
+		Address: lib.NewNullString(req.Address),
+		DOB:     lib.NewNullString(req.DOB),
+		Phone:   lib.NewNullString(req.Phone),
+	}
+
+	err := this.userService.UpdateUser(userId, user)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when update user."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "Forbidden."
+			errResStatus = http.StatusForbidden
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponseWithData{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success update user.",
+	})
+
+}
+
+func (this *UserController) DeleteUser(ctx echo.Context) error {
+
+	reqUserId, _ := lib.ExtractToken(ctx)
+	userId := ctx.Param("user-id")
+
+	err := this.userService.DeleteUser(reqUserId, userId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when delete user."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "User not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "nothing deleted" {
+			errResMessage = "Nothing deleted."
+			errResStatus = http.StatusBadRequest
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponseWithData{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success delete user.",
+	})
+
+}
+
+func (this *UserController) UserSelfDelete(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+
+	err := this.userService.UserSelfDelete(userId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when user self delete."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "Forbidden."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		if errMessage == "nothing deleted" {
+			errResMessage = "Nothing deleted."
+			errResStatus = http.StatusBadRequest
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponseWithData{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success user self delete.",
 	})
 
 }
