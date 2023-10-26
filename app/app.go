@@ -98,6 +98,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	admin.DELETE("/users/delete/:user-id", userController.DeleteUser)
 
 	users := echo.Group("/users")
+	users.GET("/profile", userController.GetUserProfile, lib.JWTMiddleware())
 	users.GET("/verify-email/:user-id", userController.VerifyEmail)
 	users.GET("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
 	users.GET("/request-verify-user", userController.RequestVerified, lib.JWTMiddleware())

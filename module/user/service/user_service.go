@@ -260,6 +260,21 @@ func (this *UserService) UserSelfDelete(userId string) error {
 
 }
 
+func (this *UserService) GetUserProfile(userId string) (dto.User, error) {
+
+	user, err := this.userRepo.FindUser(userId)
+	if err != nil {
+		return dto.User{}, err
+	}
+	user.Photo.String, err = this.storageSvc.GetUrl("user-photo", user.Photo.String)
+	if err != nil {
+		user.Photo.String = ""
+	}
+
+	return user, nil
+
+}
+
 func (this *UserService) UpdatePhoto(userId, filename string, image multipart.File) error {
 
 	fileExt := strings.ToLower(filepath.Ext(filename))

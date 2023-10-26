@@ -11,8 +11,19 @@ type (
 		Photo           string `json:"photo"`
 		Role            string `json:"role"`
 		VerifiedEmailAt string `json:"verified_email_at"`
-		RequestVerified string `json:"request_verified"`
+		RequestVerified string `json:"request_veerified"`
 		CreatedAt       string `json:"created_at"`
+	}
+
+	UserPresentataionNonAdmin struct {
+		Name      string `json:"name"`
+		Email     string `json:"email"`
+		DOB       string `json:"dob"`
+		Address   string `json:"address"`
+		Phone     string `json:"phone"`
+		Photo     string `json:"photo"`
+		Role      string `json:"role"`
+		CreatedAt string `json:"created_at"`
 	}
 )
 

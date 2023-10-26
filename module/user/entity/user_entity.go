@@ -21,6 +21,7 @@ type (
 		DeleteUser(reqUserId, userId string) error
 		UserSelfDelete(userId string) error
 		UpdatePhoto(userId, filename string, image multipart.File) error
+		GetUserProfile(userId string) (dto.User, error)
 	}
 
 	UserRepositoryInterface interface {

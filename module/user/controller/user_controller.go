@@ -551,3 +551,43 @@ func (this *UserController) UpdatePhoto(ctx echo.Context) error {
 	})
 
 }
+
+func (this *UserController) GetUserProfile(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+
+	user, err := this.userService.GetUserProfile(userId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when get user profile."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "User not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponseWithData{
+			Message: errResMessage,
+		})
+
+	}
+
+	userPresentation := user_response.UserPresentataionNonAdmin{
+		Name:      user.Name,
+		Email:     user.Email,
+		DOB:       user.DOB.String,
+		Address:   user.Address.String,
+		Phone:     user.Phone.String,
+		Photo:     user.Photo.String,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponseWithData{
+		Message: "Success get user profile.",
+		Data:    userPresentation,
+	})
+
+}
