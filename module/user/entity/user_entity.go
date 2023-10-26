@@ -1,6 +1,7 @@
 package user_entity
 
 import (
+	"mime/multipart"
 	"miniproject-alterra/module/dto"
 )
 
@@ -13,9 +14,14 @@ type (
 		RequestVerified(userId string) error
 		RequestVerifyEmail(userId string) error
 
-		GetAllUser() ([]dto.User, error)
+		GetAllUser(userId string) ([]dto.User, error)
 		GetRequestingUser(userId string) ([]dto.User, error)
 		ChangeUserRole(reqUserId string, userId string, role string) error
+		UpdateUser(userId string, payload dto.User) error
+		DeleteUser(reqUserId, userId string) error
+		UserSelfDelete(userId string) error
+		UpdatePhoto(userId, filename string, image multipart.File) error
+		GetUserProfile(userId string) (dto.User, error)
 	}
 
 	UserRepositoryInterface interface {
@@ -30,5 +36,8 @@ type (
 		UpdateUserRole(userId string, role string) error
 		FindUser(userId string) (dto.User, error)
 		GetRequestingUser() ([]dto.User, error)
+		UpdateUser(user dto.User) error
+		DeleteUser(user dto.User) error
+		UpdatePhoto(fileName string, user dto.User) error
 	}
 )

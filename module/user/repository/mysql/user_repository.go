@@ -37,7 +37,13 @@ func (this *UserRepository) GetUserByEmail(email string) (dto.User, error) {
 
 func (this *UserRepository) GetAllUser() ([]dto.User, error) {
 
-	panic("unimplemented")
+	var users []dto.User
+	err := this.db.Not("role = ?", "admin").Find(&users).Error
+	if err != nil {
+		return []dto.User{}, nil
+	}
+
+	return users, nil
 
 }
 
@@ -126,7 +132,7 @@ func (this *UserRepository) UpdateUserRole(userId string, role string) error {
 		return tx.Error
 	}
 
-	tx = this.db.Model(&user).Update("role", role)
+	tx = this.db.Model(&user).Update("role", role).Update("request_verified", "default")
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -158,5 +164,41 @@ func (this *UserRepository) GetRequestingUser() ([]dto.User, error) {
 	}
 
 	return users, nil
+
+}
+
+func (this *UserRepository) UpdateUser(user dto.User) error {
+
+	err := this.db.Save(&user).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (this *UserRepository) DeleteUser(user dto.User) error {
+
+	tx := this.db.Delete(&user)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected < 1 {
+		return errors.New("nothing deleted")
+	}
+
+	return nil
+
+}
+
+func (this *UserRepository) UpdatePhoto(fileName string, user dto.User) error {
+
+	err := this.db.Model(&user).Update("photo", fileName).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
