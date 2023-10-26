@@ -47,7 +47,7 @@ func newAWSSession(config *config.AppConfig) (*session.Session, error) {
 
 }
 
-func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
+func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 
 	sess, err := newAWSSession(config)
 	if err != nil {
@@ -77,31 +77,35 @@ func Bootstrap(db *gorm.DB, e *echo.Echo, config *config.AppConfig) {
 
 	// Route
 
-	evidence := e.Group("/evidences")
+	evidence := echo.Group("/evidences")
 	evidence.POST("/create", evidenceController.CreateEvidence, lib.JWTMiddleware())
 	evidence.GET("/get/:event-id", evidenceController.GetEvidences, lib.JWTMiddleware())
 
-	events := e.Group("/events")
+	events := echo.Group("/events")
 	events.GET("", eventController.GetEvent)
 	events.POST("", eventController.CreateEvent, lib.JWTMiddleware())
 	events.PUT("/update/:event-id", eventController.UpdateEvent, lib.JWTMiddleware())
 	events.PUT("/update-image/:event-id", eventController.UpdateImage, lib.JWTMiddleware())
 	events.DELETE("delete/:event-id", eventController.DeleteEvent, lib.JWTMiddleware())
 
-	admin := e.Group("/admin", lib.JWTMiddleware())
+	admin := echo.Group("/admin", lib.JWTMiddleware())
 	admin.GET("/events/waiting", eventController.GetWaitingEvents)
 	admin.PUT("/events/publish/:event-id", eventController.PublishEvent)
 	admin.PUT("/events/takedown/:event-id", eventController.TakedownEvent)
 	admin.GET("/users", userController.GetAllUser)
 	admin.GET("/users/requesting-users", userController.GetRequestingUser)
 	admin.PUT("/users/change-role/:user-id", userController.ChangeUserRole)
+	admin.DELETE("/users/delete/:user-id", userController.DeleteUser)
+
+	users := echo.Group("/users")
+	users.GET("/verify-email/:user-id", userController.VerifyEmail)
+	users.GET("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
+	users.GET("/request-verify-user", userController.RequestVerified, lib.JWTMiddleware())
+	users.PUT("", userController.UpdateUser, lib.JWTMiddleware())
+	users.DELETE("/self-delete", userController.UserSelfDelete, lib.JWTMiddleware())
 
 	// Auth
-
-	e.POST("/register", userController.Register)
-	e.POST("/login", userController.Login)
-	e.POST("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
-	e.GET("/verify-email/:user-id", userController.VerifyEmail)
-	e.POST("/request-verify-user", userController.RequestVerified, lib.JWTMiddleware())
+	echo.POST("/register", userController.Register)
+	echo.POST("/login", userController.Login)
 
 }

@@ -18,19 +18,20 @@ func main() {
 	cfg := config.GetConfig()
 	db := database.InitDBMysql(cfg)
 
-	e := echo.New()
-	e.Validator = &app_validator.CustomValidator{Validator: validator.New()}
-	e.Pre(middleware.RemoveTrailingSlash())
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+	echo := echo.New()
+	echo.Validator = &app_validator.CustomValidator{Validator: validator.New()}
+	echo.Pre(middleware.RemoveTrailingSlash())
+	echo.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "[${time_rfc3339}] status=${status} method=${method} uri=${uri} latency=${latency_human} \n",
 	}))
 
-	app.Bootstrap(db, e, cfg)
+	v1 := echo.Group("/v1")
+	app.Bootstrap(db, v1, cfg)
 
 	host := os.Getenv("HOST")
 	if host == "" {
 		host = "8080"
 	}
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", host)))
+	echo.Logger.Fatal(echo.Start(fmt.Sprintf(":%s", host)))
 
 }
