@@ -30,7 +30,7 @@ func (this *EvidenceService) CreateEvidence(userId string, evtId string, image m
 	evdD.EventId = evtId
 
 	fileExt := strings.ToLower(filepath.Ext(evdD.Image))
-	newFilename := fmt.Sprintf("%s-%s%s", "evidence", lib.RandomString(8), fileExt)
+	newFilename := fmt.Sprintf("%s-%s%s", "evidence", lib.RandomString(16), fileExt)
 	evdD.Image = newFilename
 
 	var err error

@@ -16,15 +16,15 @@ import (
 type EventService struct {
 	eventRepo  event_entity.IEventReposistory
 	storageSvc global_entity.StorageServiceInterface
-	openai     *global_service.OpenAIService
 	globalRepo global_entity.IGlobalRepository
+	openai     *global_service.OpenAIService
 }
 
 func NewEventService(
 	eventRepo event_entity.IEventReposistory,
 	storageSvc global_entity.StorageServiceInterface,
-	openai *global_service.OpenAIService,
-	globalRepo global_entity.IGlobalRepository) event_entity.IEventService {
+	globalRepo global_entity.IGlobalRepository,
+	openai *global_service.OpenAIService) event_entity.IEventService {
 
 	return &EventService{
 		eventRepo:  eventRepo,
@@ -53,7 +53,7 @@ func (this *EventService) updateRecommendedAction(evt dto.Event) {
 func (this *EventService) CreateEvent(userId string, eventDTO event_entity.EventDTO, image multipart.File) error {
 
 	fileExt := strings.ToLower(filepath.Ext(eventDTO.Image))
-	newFilename := fmt.Sprintf("%s-%s%s", "event", lib.RandomString(8), fileExt)
+	newFilename := fmt.Sprintf("%s-%s%s", "event", lib.RandomString(16), fileExt)
 	eventDTO.Image = newFilename
 
 	var err error
@@ -236,18 +236,17 @@ func (this *EventService) UpdateEvent(userId, eventId string, payload dto.Event)
 func (this *EventService) UpdateImage(userId, eventId, filename string, image multipart.File) error {
 
 	fileExt := strings.ToLower(filepath.Ext(filename))
-	newFilename := fmt.Sprintf("%s-%s%s", "event", lib.RandomString(8), fileExt)
-
-	err := this.storageSvc.UploadFile("event", newFilename, image)
-	if err != nil {
-		return err
-	}
+	newFilename := fmt.Sprintf("%s-%s%s", "event", lib.RandomString(16), fileExt)
 
 	event, err := this.eventRepo.FindOwnEvent(userId, eventId)
 	if err != nil {
 		return err
 	}
 
+	err = this.storageSvc.UploadFile("event", newFilename, image)
+	if err != nil {
+		return err
+	}
 	err = this.eventRepo.UpdateImage(newFilename, event)
 	if err != nil {
 		return err

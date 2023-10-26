@@ -3,24 +3,32 @@ package user_service
 import (
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"miniproject-alterra/app/config"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/module/dto"
 	global_entity "miniproject-alterra/module/global/entity"
 	user_entity "miniproject-alterra/module/user/entity"
+	"path/filepath"
+	"strings"
 )
 
 type UserService struct {
 	userRepo     user_entity.UserRepositoryInterface
 	emailService global_entity.EmailServiceInterface
+	storageSvc   global_entity.StorageServiceInterface
 	config       *config.AppConfig
 }
 
-func NewUserService(userRepo user_entity.UserRepositoryInterface, emailService global_entity.EmailServiceInterface, config *config.AppConfig) user_entity.UserServiceInterface {
+func NewUserService(userRepo user_entity.UserRepositoryInterface,
+	emailService global_entity.EmailServiceInterface,
+	storageSvc global_entity.StorageServiceInterface,
+	config *config.AppConfig) user_entity.UserServiceInterface {
 
 	return &UserService{
 		userRepo:     userRepo,
 		emailService: emailService,
+		storageSvc:   storageSvc,
 		config:       config,
 	}
 
@@ -244,6 +252,33 @@ func (this *UserService) UserSelfDelete(userId string) error {
 	}
 
 	err = this.userRepo.DeleteUser(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (this *UserService) UpdatePhoto(userId, filename string, image multipart.File) error {
+
+	fileExt := strings.ToLower(filepath.Ext(filename))
+	newFilename := fmt.Sprintf("%s-%s%s", "user-photo", lib.RandomString(16), fileExt)
+
+	user, err := this.userRepo.FindUser(userId)
+	if err != nil {
+		return err
+	}
+
+	err = this.storageSvc.UploadFile("user-photo", newFilename, image)
+	if err != nil {
+		return err
+	}
+	err = this.userRepo.UpdatePhoto(newFilename, user)
+	if err != nil {
+		return err
+	}
+	err = this.storageSvc.DeleteFile("user-photo", user.Photo.String)
 	if err != nil {
 		return err
 	}

@@ -510,3 +510,44 @@ func (this *UserController) UserSelfDelete(ctx echo.Context) error {
 	})
 
 }
+
+func (this *UserController) UpdatePhoto(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+
+	file, err := ctx.FormFile("image")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "image required.",
+		})
+	}
+	src, err := file.Open()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, global_response.StandartResponse{
+			Message: "Error when read file.",
+		})
+	}
+
+	err = this.userService.UpdatePhoto(userId, file.Filename, src)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when update user photo."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "User not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success update user photo.",
+	})
+
+}

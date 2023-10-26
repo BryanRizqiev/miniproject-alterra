@@ -191,3 +191,14 @@ func (this *UserRepository) DeleteUser(user dto.User) error {
 	return nil
 
 }
+
+func (this *UserRepository) UpdatePhoto(fileName string, user dto.User) error {
+
+	err := this.db.Model(&user).Update("photo", fileName).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

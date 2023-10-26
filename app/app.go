@@ -64,11 +64,11 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	openaiSvc := global_service.NewOpenAIService(openaiClient, openai.GPT3Dot5Turbo)
 
 	userRepository := mysql_user_repository.NewUserRepository(db)
-	userService := user_service.NewUserService(userRepository, emailService, config)
+	userService := user_service.NewUserService(userRepository, emailService, storageService, config)
 	userController := user_controller.NewUserController(userService, emailService, storageService)
 
 	eventRepo := mysql_event_repository.NewEventRepository(db)
-	eventSvc := event_service.NewEventService(eventRepo, storageService, openaiSvc, globalRepo)
+	eventSvc := event_service.NewEventService(eventRepo, storageService, globalRepo, openaiSvc)
 	eventController := event_controller.NewEventController(eventSvc)
 
 	evidenceRepo := mysql_evd_repo.NewEvidenceRepository(db)
@@ -102,6 +102,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	users.GET("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
 	users.GET("/request-verify-user", userController.RequestVerified, lib.JWTMiddleware())
 	users.PUT("", userController.UpdateUser, lib.JWTMiddleware())
+	users.PUT("/photo", userController.UpdatePhoto, lib.JWTMiddleware())
 	users.DELETE("/self-delete", userController.UserSelfDelete, lib.JWTMiddleware())
 
 	// Auth
