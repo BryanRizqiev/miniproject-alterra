@@ -2,6 +2,7 @@ package global_service
 
 import (
 	"context"
+	global_entity "miniproject-alterra/module/global/entity"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -11,7 +12,7 @@ type OpenAIService struct {
 	Model  string
 }
 
-func NewOpenAIService(client *openai.Client, model string) *OpenAIService {
+func NewOpenAIService(client *openai.Client, model string) global_entity.IOpenAIService {
 
 	return &OpenAIService{
 		Client: client,

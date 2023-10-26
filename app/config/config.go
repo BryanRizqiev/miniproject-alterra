@@ -26,6 +26,7 @@ type AppConfig struct {
 	AWS_SECRET_ACCESS_KEY string
 	AWS_REGION            string
 	ENDPOINT              string
+	OPENAPI_KEY           string
 }
 
 func GetConfig() *AppConfig {
@@ -65,6 +66,8 @@ func Config() *AppConfig {
 	app.AWS_SECRET_ACCESS_KEY = os.Getenv("AWS_SECRET_ACCESS_KEY")
 	app.AWS_REGION = os.Getenv("AWS_REGION")
 	app.ENDPOINT = os.Getenv("ENDPOINT")
+
+	app.OPENAPI_KEY = os.Getenv("OPENAPI_KEY")
 
 	return &app
 
