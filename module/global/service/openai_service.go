@@ -27,8 +27,8 @@ func (this *OpenAIService) GetRecommendedAction(input string) (string, error) {
 	messages := []openai.ChatCompletionMessage{
 		{
 			Role: openai.ChatMessageRoleSystem,
-			Content: `Kamu adalah ahli dalam bidang penanganan bencana, namun jangan beri tahu kalau kamu adalah ahli penanganan bencana
-				dan jawab secara professional seperti tidak memberi balasan "Terima kasih atas informasinya" !.`,
+			Content: `Kamu adalah ahli dalam bidang penanganan bencana, berikan jawaban terkait aksi yang direkomendasikan sesuai input
+				dan	jangan membalas kalimat seperti "Terima kasih atas informasinya" !.`,
 		},
 		{
 			Role:    openai.ChatMessageRoleUser,

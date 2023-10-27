@@ -48,7 +48,7 @@ func (this *EventReposistory) GetEvent() ([]dto.Event, error) {
 
 	var evts []dto.Event
 
-	err := this.db.Where("status = ?", "publish").Find(&evts).Preload("CreatedBy").Preload("Evidences.User").Error
+	err := this.db.Where("status = ?", "publish").Preload("CreatedBy").Preload("Evidences.User").Find(&evts).Error
 	if err != nil {
 		return []dto.Event{}, err
 	}

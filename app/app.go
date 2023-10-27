@@ -71,13 +71,13 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	eventController := event_controller.NewEventController(eventSvc)
 
 	evidenceRepo := mysql_evd_repo.NewEvidenceRepository(db)
-	evidenceSvc := evd_svc.NewEvidenceService(evidenceRepo, storageService)
+	evidenceSvc := evd_svc.NewEvidenceService(evidenceRepo, storageService, globalRepo)
 	evidenceController := evd_controller.NewEvidenceController(evidenceSvc)
 
 	// Route
 
 	evidence := echo.Group("/evidences")
-	evidence.POST("/create", evidenceController.CreateEvidence, lib.JWTMiddleware())
+	evidence.POST("", evidenceController.CreateEvidence, lib.JWTMiddleware())
 	evidence.GET("/get/:event-id", evidenceController.GetEvidences, lib.JWTMiddleware())
 
 	events := echo.Group("/events")

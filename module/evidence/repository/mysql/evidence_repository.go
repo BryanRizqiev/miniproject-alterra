@@ -1,9 +1,10 @@
 package mysql_evd_repo
 
 import (
+	"errors"
 	"miniproject-alterra/app/lib"
+	"miniproject-alterra/module/dto"
 	evd_entity "miniproject-alterra/module/evidence/entity"
-	evd_model "miniproject-alterra/module/evidence/repository/model"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -19,17 +20,11 @@ func NewEvidenceRepository(db *gorm.DB) evd_entity.IEvidenceRepository {
 	}
 }
 
-func (this *EvidenceRepository) InsertEvidence(evdD evd_entity.EvidenceDTO) error {
+func (this *EvidenceRepository) InsertEvidence(evidence dto.Evidence) error {
 
-	evd := evd_model.Evidence{
-		ID:        lib.NewUuid(),
-		Content:   evdD.Content,
-		Image:     evdD.Image,
-		CreatedBy: evdD.UserId,
-		EventId:   evdD.EventId,
-	}
+	evidence.Id = lib.NewUuid()
 
-	tx := this.db.Omit(clause.Associations).Create(&evd)
+	tx := this.db.Omit(clause.Associations).Create(&evidence)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -38,25 +33,77 @@ func (this *EvidenceRepository) InsertEvidence(evdD evd_entity.EvidenceDTO) erro
 
 }
 
-func (this *EvidenceRepository) GetEvidences(eventId string) ([]evd_entity.EvidenceDTO, error) {
+func (this *EvidenceRepository) GetEvidences(eventId string) ([]dto.Evidence, error) {
 
-	var evdsM []evd_model.Evidence
-	var evdsD []evd_entity.EvidenceDTO
+	var evidences []dto.Evidence
 
-	tx := this.db.Where("event_id = ?", eventId).Find(&evdsM)
+	tx := this.db.Where("event_id = ?", eventId).Find(&evidences)
 	if tx.Error != nil {
-		return evdsD, tx.Error
+		return []dto.Evidence{}, tx.Error
 	}
 
-	for _, value := range evdsM {
-		evdD := evd_entity.EvidenceDTO{
-			Id:      value.ID,
-			Content: value.Content,
-			Image:   value.Image,
-		}
-		evdsD = append(evdsD, evdD)
+	return evidences, nil
+
+}
+
+func (this *EvidenceRepository) UpdateEvidence(evidence dto.Evidence) error {
+
+	err := this.db.Save(&evidence).Error
+	if err != nil {
+		return err
 	}
 
-	return evdsD, nil
+	return nil
+
+}
+
+func (this *EvidenceRepository) UpdateImage(fileName string, evidence dto.Evidence) error {
+
+	err := this.db.Model(&evidence).Update("image", fileName).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (this *EvidenceRepository) DeleteEvidence(event dto.Evidence) error {
+
+	tx := this.db.Delete(&event)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected < 1 {
+		return errors.New("nothing deleted")
+	}
+
+	return nil
+
+}
+
+func (this *EvidenceRepository) FindOwnEvidence(userId, evidenceId string) (dto.Evidence, error) {
+
+	var evidence dto.Evidence
+
+	tx := this.db.Where("created_by", userId).First(&evidence, "id = ?", evidenceId)
+	if tx.Error != nil {
+		return dto.Evidence{}, tx.Error
+	}
+
+	return evidence, nil
+
+}
+
+func (this *EvidenceRepository) FindEvidence(evidenceId string) (dto.Evidence, error) {
+
+	var evidence dto.Evidence
+
+	tx := this.db.First(&evidence, "id = ?", evidenceId)
+	if tx.Error != nil {
+		return dto.Evidence{}, tx.Error
+	}
+
+	return evidence, nil
 
 }
