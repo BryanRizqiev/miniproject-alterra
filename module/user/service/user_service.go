@@ -278,7 +278,7 @@ func (this *UserService) GetUserProfile(userId string) (dto.User, error) {
 func (this *UserService) UpdatePhoto(userId, filename string, image multipart.File) error {
 
 	fileExt := strings.ToLower(filepath.Ext(filename))
-	newFilename := fmt.Sprintf("%s-%s%s", "user-photo", lib.RandomString(16), fileExt)
+	newFilename := fmt.Sprintf("%s-%s%s", "user", lib.RandomString(16), fileExt)
 
 	user, err := this.userRepo.FindUser(userId)
 	if err != nil {
