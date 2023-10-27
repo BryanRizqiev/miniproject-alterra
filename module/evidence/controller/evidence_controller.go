@@ -3,12 +3,14 @@ package evd_controller
 import (
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
+	"miniproject-alterra/module/dto"
 	evd_req "miniproject-alterra/module/evidence/controller/request"
 	evd_res "miniproject-alterra/module/evidence/controller/response"
 	evd_entity "miniproject-alterra/module/evidence/entity"
 	global_response "miniproject-alterra/module/global/controller/response"
 	"net/http"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
 )
 
@@ -40,7 +42,7 @@ func (this *EvidenceController) CreateEvidence(ctx echo.Context) error {
 	file, err := ctx.FormFile("image")
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
-			Message: "Request not valid.",
+			Message: "image required.",
 		})
 	}
 	src, err := file.Open()
@@ -58,16 +60,28 @@ func (this *EvidenceController) CreateEvidence(ctx echo.Context) error {
 	}
 
 	userId, _ := lib.ExtractToken(ctx)
-	evdD := evd_entity.EvidenceDTO{
+	evidence := dto.Evidence{
 		Content: req.Content,
 		Image:   file.Filename,
 	}
 
-	err = this.evdSvc.CreateEvidence(userId, req.EventId, src, evdD)
+	err = this.evdSvc.CreateEvidence(userId, req.EventId, src, evidence)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, global_response.StandartResponse{
-			Message: "Error when create evidence.",
+
+		err, ok := err.(*mysql.MySQLError)
+		if ok && err.Number == 1452 {
+			return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+				Message: "Event not found.",
+			})
+		}
+
+		errResMessage := "Error when get create evidence."
+		errResStatus := http.StatusInternalServerError
+
+		return ctx.JSON(errResStatus, global_response.StandartResponseWithData{
+			Message: errResMessage,
 		})
+
 	}
 
 	return ctx.JSON(http.StatusCreated, global_response.StandartResponse{
@@ -80,7 +94,7 @@ func (this *EvidenceController) GetEvidences(ctx echo.Context) error {
 
 	eventId := ctx.Param("event-id")
 
-	evdsD, err := this.evdSvc.GetEvidences(eventId)
+	evidences, err := this.evdSvc.GetEvidences(eventId)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, evd_res.GetEvdsRes{
 			Message: "Error when get evidences.",
@@ -88,10 +102,11 @@ func (this *EvidenceController) GetEvidences(ctx echo.Context) error {
 	}
 
 	var evdsPresentator []evd_res.EvdsPresentation
-	for _, value := range evdsD {
+	for _, evidence := range evidences {
 		evdPresentator := evd_res.EvdsPresentation{
-			Content: value.Content,
-			Image:   value.Image,
+			Content:   evidence.Content,
+			Image:     evidence.Image,
+			CreatedAt: evidence.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
 		}
 		evdsPresentator = append(evdsPresentator, evdPresentator)
 	}

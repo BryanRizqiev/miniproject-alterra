@@ -14,7 +14,6 @@ import (
 	user_controller "miniproject-alterra/module/user/controller"
 	mysql_user_repository "miniproject-alterra/module/user/repository/mysql"
 	user_service "miniproject-alterra/module/user/service"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -60,7 +59,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 
 	emailService := global_service.NewEmailService(config)
 	globalRepo := global_repo.NewGlobalRepo(db)
-	openaiClient := openai.NewClient(os.Getenv("API_KEY"))
+	openaiClient := openai.NewClient(config.OPENAPI_KEY)
 	openaiSvc := global_service.NewOpenAIService(openaiClient, openai.GPT3Dot5Turbo)
 
 	userRepository := mysql_user_repository.NewUserRepository(db)
@@ -72,13 +71,13 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	eventController := event_controller.NewEventController(eventSvc)
 
 	evidenceRepo := mysql_evd_repo.NewEvidenceRepository(db)
-	evidenceSvc := evd_svc.NewEvidenceService(evidenceRepo, storageService)
+	evidenceSvc := evd_svc.NewEvidenceService(evidenceRepo, storageService, globalRepo)
 	evidenceController := evd_controller.NewEvidenceController(evidenceSvc)
 
 	// Route
 
 	evidence := echo.Group("/evidences")
-	evidence.POST("/create", evidenceController.CreateEvidence, lib.JWTMiddleware())
+	evidence.POST("", evidenceController.CreateEvidence, lib.JWTMiddleware())
 	evidence.GET("/get/:event-id", evidenceController.GetEvidences, lib.JWTMiddleware())
 
 	events := echo.Group("/events")

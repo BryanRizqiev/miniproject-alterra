@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"miniproject-alterra/app/lib"
+	"miniproject-alterra/module/dto"
 	evd_entity "miniproject-alterra/module/evidence/entity"
 	global_entity "miniproject-alterra/module/global/entity"
 	"path/filepath"
@@ -11,35 +12,37 @@ import (
 )
 
 type EvidenceService struct {
-	evdRepo evd_entity.IEvidenceRepository
-	strgSvc global_entity.StorageServiceInterface
+	evidenceRepo evd_entity.IEvidenceRepository
+	storageSvc   global_entity.StorageServiceInterface
+	globalRepo   global_entity.IGlobalRepository
 }
 
-func NewEvidenceService(evdRepo evd_entity.IEvidenceRepository, strgSvc global_entity.StorageServiceInterface) evd_entity.IEvidenceService {
+func NewEvidenceService(evidenceRepo evd_entity.IEvidenceRepository, storageSvc global_entity.StorageServiceInterface, globalRepo global_entity.IGlobalRepository) evd_entity.IEvidenceService {
 
 	return &EvidenceService{
-		evdRepo: evdRepo,
-		strgSvc: strgSvc,
+		evidenceRepo: evidenceRepo,
+		storageSvc:   storageSvc,
+		globalRepo:   globalRepo,
 	}
 
 }
 
-func (this *EvidenceService) CreateEvidence(userId string, evtId string, image multipart.File, evdD evd_entity.EvidenceDTO) error {
+func (this *EvidenceService) CreateEvidence(userId string, eventId string, image multipart.File, evidence dto.Evidence) error {
 
-	evdD.UserId = userId
-	evdD.EventId = evtId
+	evidence.CreatedBy = userId
+	evidence.EventId = eventId
 
-	fileExt := strings.ToLower(filepath.Ext(evdD.Image))
+	fileExt := strings.ToLower(filepath.Ext(evidence.Image))
 	newFilename := fmt.Sprintf("%s-%s%s", "evidence", lib.RandomString(16), fileExt)
-	evdD.Image = newFilename
+	evidence.Image = newFilename
 
 	var err error
-	err = this.strgSvc.UploadFile("event-evidence", newFilename, image)
+	err = this.storageSvc.UploadFile("event-evidence", newFilename, image)
 	if err != nil {
 		return err
 	}
 
-	err = this.evdRepo.InsertEvidence(evdD)
+	err = this.evidenceRepo.InsertEvidence(evidence)
 	if err != nil {
 		return err
 	}
@@ -48,21 +51,95 @@ func (this *EvidenceService) CreateEvidence(userId string, evtId string, image m
 
 }
 
-func (this *EvidenceService) GetEvidences(eventId string) ([]evd_entity.EvidenceDTO, error) {
+func (this *EvidenceService) GetEvidences(eventId string) ([]dto.Evidence, error) {
 
-	evdsD, err := this.evdRepo.GetEvidences(eventId)
+	evidences, err := this.evidenceRepo.GetEvidences(eventId)
 	if err != nil {
-		return []evd_entity.EvidenceDTO{}, err
+		return []dto.Evidence{}, err
 	}
 
-	for i := range evdsD {
-		url, errURL := this.strgSvc.GetUrl("event", evdsD[i].Image)
+	for i := range evidences {
+		url, errURL := this.storageSvc.GetUrl("event-evidence", evidences[i].Image)
 		if errURL != nil {
-			return []evd_entity.EvidenceDTO{}, err
+			return []dto.Evidence{}, err
 		}
-		evdsD[i].Image = url
+		evidences[i].Image = url
 	}
 
-	return evdsD, nil
+	return evidences, nil
+
+}
+
+func (this *EvidenceService) UpdateEvidence(userId, evidenceId string, payload dto.Evidence) error {
+
+	evidence, err := this.evidenceRepo.FindOwnEvidence(userId, evidenceId)
+	if err != nil {
+		return err
+	}
+
+	evidence.Content = payload.Content
+
+	err = this.evidenceRepo.UpdateEvidence(evidence)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (this *EvidenceService) UpdateImage(userId, evidenceId, filename string, image multipart.File) error {
+
+	fileExt := strings.ToLower(filepath.Ext(filename))
+	newFilename := fmt.Sprintf("%s-%s%s", "evidence", lib.RandomString(16), fileExt)
+
+	evidence, err := this.evidenceRepo.FindOwnEvidence(userId, evidenceId)
+	if err != nil {
+		return err
+	}
+
+	err = this.storageSvc.UploadFile("event-evidence", newFilename, image)
+	if err != nil {
+		return err
+	}
+	err = this.evidenceRepo.UpdateImage(newFilename, evidence)
+	if err != nil {
+		return err
+	}
+	_ = this.storageSvc.DeleteFile("event-evidence", evidence.Image)
+
+	return nil
+
+}
+
+func (this *EvidenceService) DeleteEvidence(userId, evidenceId string) error {
+
+	user, err := this.globalRepo.GetUser(userId)
+	if err != nil {
+		return err
+	}
+	if lib.CheckIsAdmin(user) {
+		evidence, err := this.evidenceRepo.FindEvidence(evidenceId)
+		if err != nil {
+			return err
+		}
+
+		err = this.evidenceRepo.DeleteEvidence(evidence)
+		if err != nil {
+			return err
+		}
+	} else {
+		evidence, err := this.evidenceRepo.FindOwnEvidence(userId, evidenceId)
+		if err != nil {
+			return err
+		}
+
+		err = this.evidenceRepo.DeleteEvidence(evidence)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 
 }
