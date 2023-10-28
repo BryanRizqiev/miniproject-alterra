@@ -57,6 +57,19 @@ func (this *EventReposistory) GetEvent() ([]dto.Event, error) {
 
 }
 
+func (this *EventReposistory) GetAllEvent() ([]dto.Event, error) {
+
+	var event []dto.Event
+
+	err := this.db.Unscoped().Preload("CreatedBy").Find(&event).Error
+	if err != nil {
+		return []dto.Event{}, err
+	}
+
+	return event, nil
+
+}
+
 func (this *EventReposistory) UpdateRecommendedAction(evt dto.Event, value string) error {
 
 	err := this.db.Model(&evt).Update("recommended_action", value).Error

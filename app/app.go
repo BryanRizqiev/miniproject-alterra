@@ -90,6 +90,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	events.DELETE("delete/:event-id", eventController.DeleteEvent, lib.JWTMiddleware())
 
 	admin := echo.Group("/admin", lib.JWTMiddleware())
+	admin.GET("/events", eventController.GetAllEvent)
 	admin.GET("/events/waiting", eventController.GetWaitingEvents)
 	admin.PUT("/events/publish/:event-id", eventController.PublishEvent)
 	admin.PUT("/events/takedown/:event-id", eventController.TakedownEvent)

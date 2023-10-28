@@ -120,6 +120,25 @@ func (this *EventService) GetEvent() ([]dto.Event, error) {
 
 }
 
+func (this *EventService) GetAllEvent(userId string) ([]dto.Event, error) {
+
+	user, err := this.globalRepo.GetUser(userId)
+	if err != nil {
+		return []dto.Event{}, err
+	}
+	if !lib.CheckIsAdmin(user) {
+		return []dto.Event{}, errors.New("user not allowed")
+	}
+
+	events, err := this.eventRepo.GetAllEvent()
+	if err != nil {
+		return []dto.Event{}, err
+	}
+
+	return events, nil
+
+}
+
 func (this *EventService) GetWaitingEvents(userId string) ([]dto.Event, error) {
 
 	var events []dto.Event

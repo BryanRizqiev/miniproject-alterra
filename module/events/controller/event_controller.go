@@ -1,6 +1,7 @@
 package event_controller
 
 import (
+	"fmt"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	"miniproject-alterra/module/dto"
@@ -206,6 +207,58 @@ func (this *EventController) GetEvent(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, evt_response.GetEventResponse{
 		Message: "Success get event.",
 		Data:    presentations,
+	})
+
+}
+
+func (this *EventController) GetAllEvent(ctx echo.Context) error {
+
+	userId, _ := lib.ExtractToken(ctx)
+	fmt.Println(userId)
+	events, err := this.eventSvc.GetAllEvent(userId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when get all event."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		return ctx.JSON(errResStatus, evt_response.GetEventResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	var eventPresentations []evt_response.EventPresentation
+	for _, event := range events {
+		verfied := true
+		if event.CreatedBy.Role == "user" {
+			verfied = false
+		}
+
+		eventPresentation := evt_response.EventPresentation{
+			Id:                event.Id,
+			Title:             event.Title,
+			Location:          event.Location,
+			LocationURL:       event.LocationURL.String,
+			Description:       event.Description.String,
+			Image:             event.Image.String,
+			RecommendedAction: event.RecommendedAction.String,
+			CreatedBy:         event.CreatedBy.Name,
+			Verified:          verfied,
+			CreatedAt:         event.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
+		}
+
+		eventPresentations = append(eventPresentations, eventPresentation)
+	}
+
+	return ctx.JSON(http.StatusOK, evt_response.GetEventResponse{
+		Message: "Success get waiting all event.",
+		Data:    eventPresentations,
 	})
 
 }
