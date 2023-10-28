@@ -1,7 +1,6 @@
 package event_controller
 
 import (
-	"fmt"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	"miniproject-alterra/module/dto"
@@ -214,7 +213,6 @@ func (this *EventController) GetEvent(ctx echo.Context) error {
 func (this *EventController) GetAllEvent(ctx echo.Context) error {
 
 	userId, _ := lib.ExtractToken(ctx)
-	fmt.Println(userId)
 	events, err := this.eventSvc.GetAllEvent(userId)
 	if err != nil {
 
