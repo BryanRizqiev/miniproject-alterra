@@ -8,7 +8,7 @@ import (
 type (
 	IEvidenceService interface {
 		CreateEvidence(userId string, eventId string, image multipart.File, evidence dto.Evidence) error
-		GetEvidences(eventId string) ([]dto.Evidence, error)
+		GetEvidences(userId, eventId string) ([]dto.Evidence, error)
 		UpdateImage(userId, evidenceId, filename string, image multipart.File) error
 		UpdateEvidence(userId, evidenceId string, payload dto.Evidence) error
 		DeleteEvidence(userId, evidenceId string) error

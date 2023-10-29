@@ -76,9 +76,11 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 
 	// Route
 
-	evidence := echo.Group("/evidences")
-	evidence.POST("", evidenceController.CreateEvidence, lib.JWTMiddleware())
-	evidence.GET("/get/:event-id", evidenceController.GetEvidences, lib.JWTMiddleware())
+	evidence := echo.Group("/evidences", lib.JWTMiddleware())
+	evidence.POST("", evidenceController.CreateEvidence)
+	evidence.PUT("/update/:evidence-id", evidenceController.UpdateEvidence)
+	evidence.PUT("/update-image/:evidence-id", evidenceController.UpdateImage)
+	evidence.DELETE("/delete/:evidence-id", evidenceController.DeleteEvidence)
 
 	events := echo.Group("/events")
 	events.GET("", eventController.GetEvent)
@@ -88,6 +90,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	events.DELETE("delete/:event-id", eventController.DeleteEvent, lib.JWTMiddleware())
 
 	admin := echo.Group("/admin", lib.JWTMiddleware())
+	admin.GET("/events", eventController.GetAllEvent)
 	admin.GET("/events/waiting", eventController.GetWaitingEvents)
 	admin.PUT("/events/publish/:event-id", eventController.PublishEvent)
 	admin.PUT("/events/takedown/:event-id", eventController.TakedownEvent)
@@ -95,6 +98,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	admin.GET("/users/requesting-users", userController.GetRequestingUser)
 	admin.PUT("/users/change-role/:user-id", userController.ChangeUserRole)
 	admin.DELETE("/users/delete/:user-id", userController.DeleteUser)
+	admin.GET("/evidences/get-all/:event-id", evidenceController.GetEvidences)
 
 	users := echo.Group("/users")
 	users.GET("/profile", userController.GetUserProfile, lib.JWTMiddleware())

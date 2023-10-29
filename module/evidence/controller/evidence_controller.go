@@ -75,7 +75,7 @@ func (this *EvidenceController) CreateEvidence(ctx echo.Context) error {
 			})
 		}
 
-		errResMessage := "Error when get create evidence."
+		errResMessage := "Error when create evidence."
 		errResStatus := http.StatusInternalServerError
 
 		return ctx.JSON(errResStatus, global_response.StandartResponseWithData{
@@ -93,12 +93,29 @@ func (this *EvidenceController) CreateEvidence(ctx echo.Context) error {
 func (this *EvidenceController) GetEvidences(ctx echo.Context) error {
 
 	eventId := ctx.Param("event-id")
+	userId, _ := lib.ExtractToken(ctx)
 
-	evidences, err := this.evdSvc.GetEvidences(eventId)
+	evidences, err := this.evdSvc.GetEvidences(userId, eventId)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, evd_res.GetEvdsRes{
-			Message: "Error when get evidences.",
+
+		errMessage := err.Error()
+		errResMessage := "Error when get evidences."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "Evidences not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		if errMessage == "user not allowed" {
+			errResMessage = "User not allowed."
+			errResStatus = http.StatusForbidden
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
 		})
+
 	}
 
 	var evdsPresentator []evd_res.EvdsPresentation
@@ -114,6 +131,121 @@ func (this *EvidenceController) GetEvidences(ctx echo.Context) error {
 	return ctx.JSON(http.StatusInternalServerError, evd_res.GetEvdsRes{
 		Message: "Success get evidences.",
 		Data:    evdsPresentator,
+	})
+
+}
+
+func (this *EvidenceController) UpdateEvidence(ctx echo.Context) error {
+
+	evidenceId := ctx.Param("evidence-id")
+	req := new(evd_req.UpdateEvdReq)
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "Request not valid.",
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return err
+	}
+
+	userId, _ := lib.ExtractToken(ctx)
+	evidence := dto.Evidence{
+		Content: req.Content,
+	}
+
+	err := this.evdSvc.UpdateEvidence(userId, evidenceId, evidence)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when update evidence."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "Evidence not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success update evidence.",
+	})
+
+}
+
+func (this *EvidenceController) UpdateImage(ctx echo.Context) error {
+
+	evidenceId := ctx.Param("evidence-id")
+
+	file, err := ctx.FormFile("image")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
+			Message: "image required.",
+		})
+	}
+	src, err := file.Open()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, global_response.StandartResponse{
+			Message: "Error when read file.",
+		})
+	}
+	defer src.Close()
+
+	userId, _ := lib.ExtractToken(ctx)
+
+	err = this.evdSvc.UpdateImage(userId, evidenceId, file.Filename, src)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when update image."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "Evidence not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success update image.",
+	})
+
+}
+
+func (this *EvidenceController) DeleteEvidence(ctx echo.Context) error {
+
+	evidenceId := ctx.Param("evidence-id")
+	userId, _ := lib.ExtractToken(ctx)
+
+	err := this.evdSvc.DeleteEvidence(userId, evidenceId)
+	if err != nil {
+
+		errMessage := err.Error()
+		errResMessage := "Error when delete evidence."
+		errResStatus := http.StatusInternalServerError
+
+		if errMessage == "record not found" {
+			errResMessage = "Evidence not found."
+			errResStatus = http.StatusNotFound
+		}
+
+		return ctx.JSON(errResStatus, global_response.StandartResponse{
+			Message: errResMessage,
+		})
+
+	}
+
+	return ctx.JSON(http.StatusOK, global_response.StandartResponse{
+		Message: "Success delete evidence.",
 	})
 
 }

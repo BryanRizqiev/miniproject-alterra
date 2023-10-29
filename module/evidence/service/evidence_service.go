@@ -1,6 +1,7 @@
 package evd_svc
 
 import (
+	"errors"
 	"fmt"
 	"mime/multipart"
 	"miniproject-alterra/app/lib"
@@ -17,7 +18,11 @@ type EvidenceService struct {
 	globalRepo   global_entity.IGlobalRepository
 }
 
-func NewEvidenceService(evidenceRepo evd_entity.IEvidenceRepository, storageSvc global_entity.StorageServiceInterface, globalRepo global_entity.IGlobalRepository) evd_entity.IEvidenceService {
+func NewEvidenceService(
+	evidenceRepo evd_entity.IEvidenceRepository,
+	storageSvc global_entity.StorageServiceInterface,
+	globalRepo global_entity.IGlobalRepository,
+) evd_entity.IEvidenceService {
 
 	return &EvidenceService{
 		evidenceRepo: evidenceRepo,
@@ -51,7 +56,16 @@ func (this *EvidenceService) CreateEvidence(userId string, eventId string, image
 
 }
 
-func (this *EvidenceService) GetEvidences(eventId string) ([]dto.Evidence, error) {
+func (this *EvidenceService) GetEvidences(userId, eventId string) ([]dto.Evidence, error) {
+
+	user, err := this.globalRepo.GetUser(userId)
+	if err != nil {
+		return []dto.Evidence{}, err
+	}
+
+	if !lib.CheckIsAdmin(user) {
+		return []dto.Evidence{}, errors.New("user not allowed")
+	}
 
 	evidences, err := this.evidenceRepo.GetEvidences(eventId)
 	if err != nil {
@@ -61,7 +75,7 @@ func (this *EvidenceService) GetEvidences(eventId string) ([]dto.Evidence, error
 	for i := range evidences {
 		url, errURL := this.storageSvc.GetUrl("event-evidence", evidences[i].Image)
 		if errURL != nil {
-			return []dto.Evidence{}, err
+			return []dto.Evidence{}, errURL
 		}
 		evidences[i].Image = url
 	}
@@ -90,13 +104,13 @@ func (this *EvidenceService) UpdateEvidence(userId, evidenceId string, payload d
 
 func (this *EvidenceService) UpdateImage(userId, evidenceId, filename string, image multipart.File) error {
 
-	fileExt := strings.ToLower(filepath.Ext(filename))
-	newFilename := fmt.Sprintf("%s-%s%s", "evidence", lib.RandomString(16), fileExt)
-
 	evidence, err := this.evidenceRepo.FindOwnEvidence(userId, evidenceId)
 	if err != nil {
 		return err
 	}
+
+	fileExt := strings.ToLower(filepath.Ext(filename))
+	newFilename := fmt.Sprintf("%s-%s%s", "evidence", lib.RandomString(16), fileExt)
 
 	err = this.storageSvc.UploadFile("event-evidence", newFilename, image)
 	if err != nil {
