@@ -123,10 +123,16 @@ func (this *EvidenceController) GetEvidences(ctx echo.Context) error {
 
 	var evdsPresentator []evd_res.EvdsPresentation
 	for _, evidence := range evidences {
+		isVerified := false
+		if evidence.User.Role != "user" {
+			isVerified = true
+		}
 		evdPresentator := evd_res.EvdsPresentation{
 			Content:   evidence.Content,
 			Image:     evidence.Image,
 			CreatedAt: evidence.CreatedAt.Format(lib.DATE_WITH_DAY_FORMAT),
+			CreatedBy: evidence.User.Name,
+			Verified:  isVerified,
 		}
 		evdsPresentator = append(evdsPresentator, evdPresentator)
 	}

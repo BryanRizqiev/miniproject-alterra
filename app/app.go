@@ -102,8 +102,8 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 
 	users := echo.Group("/users")
 	users.GET("/profile", userController.GetUserProfile, lib.JWTMiddleware())
-	users.GET("/verify-email/:user-id", userController.VerifyEmail)
 	users.GET("/request-verify-email", userController.RequestVerifyEmail, lib.JWTMiddleware())
+	users.GET("/verify-email/:user-id", userController.VerifyEmail)
 	users.GET("/request-verify-user", userController.RequestVerified, lib.JWTMiddleware())
 	users.PUT("", userController.UpdateUser, lib.JWTMiddleware())
 	users.PUT("/photo", userController.UpdatePhoto, lib.JWTMiddleware())
