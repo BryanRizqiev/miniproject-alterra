@@ -3,8 +3,6 @@ package config
 import (
 	"os"
 	"strconv"
-
-	"github.com/joho/godotenv"
 )
 
 var JWT_SECRET string
@@ -38,10 +36,12 @@ func GetConfig() *AppConfig {
 func Config() *AppConfig {
 
 	var app AppConfig
-	err := godotenv.Load()
-	if err != nil {
-		panic("Error when loading .env file")
-	}
+
+	// dev environment
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	panic("Error when loading .env file")
+	// }
 
 	app.APP_URL = os.Getenv("APP_URL")
 	app.DB_USERNAME = os.Getenv("DB_USERNAME")
