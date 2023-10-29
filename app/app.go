@@ -87,7 +87,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	events.POST("", eventController.CreateEvent, lib.JWTMiddleware())
 	events.PUT("/update/:event-id", eventController.UpdateEvent, lib.JWTMiddleware())
 	events.PUT("/update-image/:event-id", eventController.UpdateImage, lib.JWTMiddleware())
-	events.DELETE("delete/:event-id", eventController.DeleteEvent, lib.JWTMiddleware())
+	events.DELETE("/delete/:event-id", eventController.DeleteEvent, lib.JWTMiddleware())
 
 	admin := echo.Group("/admin", lib.JWTMiddleware())
 	admin.GET("/events", eventController.GetAllEvent)

@@ -175,7 +175,7 @@ func (this *UserController) VerifyEmail(ctx echo.Context) error {
 		errResStatus := http.StatusInternalServerError
 
 		if errMessage == "user already verified" {
-			errResMessage = "User already verified."
+			errResMessage = "Email already verified."
 			errResStatus = http.StatusBadRequest
 		}
 
@@ -208,7 +208,7 @@ func (this *UserController) RequestVerifyEmail(ctx echo.Context) error {
 		errResStatus := http.StatusInternalServerError
 
 		if errMessage == "user already verified" {
-			errResMessage = "User already verified."
+			errResMessage = "Email already verified."
 			errResStatus = http.StatusBadRequest
 		}
 
