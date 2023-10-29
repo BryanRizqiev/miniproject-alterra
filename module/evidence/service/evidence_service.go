@@ -75,7 +75,7 @@ func (this *EvidenceService) GetEvidences(userId, eventId string) ([]dto.Evidenc
 	for i := range evidences {
 		url, errURL := this.storageSvc.GetUrl("event-evidence", evidences[i].Image)
 		if errURL != nil {
-			return []dto.Evidence{}, err
+			return []dto.Evidence{}, errURL
 		}
 		evidences[i].Image = url
 	}
