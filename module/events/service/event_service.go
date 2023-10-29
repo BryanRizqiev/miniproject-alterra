@@ -8,7 +8,6 @@ import (
 	"miniproject-alterra/module/dto"
 	event_entity "miniproject-alterra/module/events/entity"
 	global_entity "miniproject-alterra/module/global/entity"
-	global_service "miniproject-alterra/module/global/service"
 	"path/filepath"
 	"strings"
 )
@@ -17,14 +16,14 @@ type EventService struct {
 	eventRepo  event_entity.IEventReposistory
 	storageSvc global_entity.StorageServiceInterface
 	globalRepo global_entity.IGlobalRepository
-	openai     *global_service.OpenAIService
+	openai     global_entity.IOpenAIService
 }
 
 func NewEventService(
 	eventRepo event_entity.IEventReposistory,
 	storageSvc global_entity.StorageServiceInterface,
 	globalRepo global_entity.IGlobalRepository,
-	openai *global_service.OpenAIService) event_entity.IEventService {
+	openai global_entity.IOpenAIService) event_entity.IEventService {
 
 	return &EventService{
 		eventRepo:  eventRepo,
@@ -118,6 +117,25 @@ func (this *EventService) GetEvent() ([]dto.Event, error) {
 	}
 
 	return evts, nil
+
+}
+
+func (this *EventService) GetAllEvent(userId string) ([]dto.Event, error) {
+
+	user, err := this.globalRepo.GetUser(userId)
+	if err != nil {
+		return []dto.Event{}, err
+	}
+	if !lib.CheckIsAdmin(user) {
+		return []dto.Event{}, errors.New("user not allowed")
+	}
+
+	events, err := this.eventRepo.GetAllEvent()
+	if err != nil {
+		return []dto.Event{}, err
+	}
+
+	return events, nil
 
 }
 

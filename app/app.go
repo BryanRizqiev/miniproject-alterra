@@ -14,7 +14,6 @@ import (
 	user_controller "miniproject-alterra/module/user/controller"
 	mysql_user_repository "miniproject-alterra/module/user/repository/mysql"
 	user_service "miniproject-alterra/module/user/service"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -60,7 +59,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 
 	emailService := global_service.NewEmailService(config)
 	globalRepo := global_repo.NewGlobalRepo(db)
-	openaiClient := openai.NewClient(os.Getenv("API_KEY"))
+	openaiClient := openai.NewClient(config.OPENAPI_KEY)
 	openaiSvc := global_service.NewOpenAIService(openaiClient, openai.GPT3Dot5Turbo)
 
 	userRepository := mysql_user_repository.NewUserRepository(db)
@@ -72,14 +71,16 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	eventController := event_controller.NewEventController(eventSvc)
 
 	evidenceRepo := mysql_evd_repo.NewEvidenceRepository(db)
-	evidenceSvc := evd_svc.NewEvidenceService(evidenceRepo, storageService)
+	evidenceSvc := evd_svc.NewEvidenceService(evidenceRepo, storageService, globalRepo)
 	evidenceController := evd_controller.NewEvidenceController(evidenceSvc)
 
 	// Route
 
-	evidence := echo.Group("/evidences")
-	evidence.POST("/create", evidenceController.CreateEvidence, lib.JWTMiddleware())
-	evidence.GET("/get/:event-id", evidenceController.GetEvidences, lib.JWTMiddleware())
+	evidence := echo.Group("/evidences", lib.JWTMiddleware())
+	evidence.POST("", evidenceController.CreateEvidence)
+	evidence.PUT("/update/:evidence-id", evidenceController.UpdateEvidence)
+	evidence.PUT("/update-image/:evidence-id", evidenceController.UpdateImage)
+	evidence.DELETE("/delete/:evidence-id", evidenceController.DeleteEvidence)
 
 	events := echo.Group("/events")
 	events.GET("", eventController.GetEvent)
@@ -89,6 +90,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	events.DELETE("delete/:event-id", eventController.DeleteEvent, lib.JWTMiddleware())
 
 	admin := echo.Group("/admin", lib.JWTMiddleware())
+	admin.GET("/events", eventController.GetAllEvent)
 	admin.GET("/events/waiting", eventController.GetWaitingEvents)
 	admin.PUT("/events/publish/:event-id", eventController.PublishEvent)
 	admin.PUT("/events/takedown/:event-id", eventController.TakedownEvent)
@@ -96,6 +98,7 @@ func Bootstrap(db *gorm.DB, echo *echo.Group, config *config.AppConfig) {
 	admin.GET("/users/requesting-users", userController.GetRequestingUser)
 	admin.PUT("/users/change-role/:user-id", userController.ChangeUserRole)
 	admin.DELETE("/users/delete/:user-id", userController.DeleteUser)
+	admin.GET("/evidences/get-all/:event-id", evidenceController.GetEvidences)
 
 	users := echo.Group("/users")
 	users.GET("/profile", userController.GetUserProfile, lib.JWTMiddleware())

@@ -28,6 +28,10 @@ type (
 		GetUrl(bucketName string, fileName string) (string, error)
 	}
 
+	IOpenAIService interface {
+		GetRecommendedAction(input string) (string, error)
+	}
+
 	IGlobalRepository interface {
 		GetUser(userId string) (dto.User, error)
 	}
