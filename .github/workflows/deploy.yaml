@@ -31,7 +31,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: docker
-    steps:docker pull brayrizqiev/alta-golang-miniproject
+    steps:
       - name: Connect to server using SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
