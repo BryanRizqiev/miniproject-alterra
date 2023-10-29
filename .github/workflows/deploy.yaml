@@ -43,6 +43,6 @@ jobs:
           script: |
             # sudo docker stop golang-miniproject-container
             # sudo docker rm golang-miniproject-container
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/alta-golang-miniproject:${{ github.ref_name }}/alta-golang-miniproject:${{ github.ref_name }}
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/alta-golang-miniproject:${{ github.ref_name }}
             
-            sudo docker run -d --network=host --restart=always -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} -e DB_HOSTNAME=${{ secrets.DB_HOSTNAME }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_NAME=${{ secrets.DB_NAME }} --name golang-miniproject-container ${{ secrets.DOCKERHUB_USERNAME }}
+            sudo docker run -d --network=host --restart=always -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} -e DB_HOSTNAME=${{ secrets.DB_HOSTNAME }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_NAME=${{ secrets.DB_NAME }} --name golang-miniproject-container ${{ secrets.DOCKERHUB_USERNAME }}/alta-golang-miniproject:${{ github.ref_name }}
