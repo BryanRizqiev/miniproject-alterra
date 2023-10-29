@@ -155,7 +155,7 @@ func (this *UserService) GetRequestingUser(userId string) ([]dto.User, error) {
 
 	for i := range users {
 		if users[i].Photo.String != "" {
-			users[i].Photo.String, err = this.storageSvc.GetUrl("user-photo", user.Photo.String)
+			users[i].Photo.String, err = this.storageSvc.GetUrl("user-photo", users[i].Photo.String)
 			if err != nil {
 				return []dto.User{}, err
 			}
@@ -204,7 +204,7 @@ func (this *UserService) GetAllUser(userId string) ([]dto.User, error) {
 
 	for i := range users {
 		if users[i].Photo.String != "" {
-			users[i].Photo.String, err = this.storageSvc.GetUrl("user-photo", user.Photo.String)
+			users[i].Photo.String, err = this.storageSvc.GetUrl("user-photo", users[i].Photo.String)
 			if err != nil {
 				return []dto.User{}, err
 			}
