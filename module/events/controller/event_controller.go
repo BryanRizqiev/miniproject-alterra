@@ -1,6 +1,7 @@
 package event_controller
 
 import (
+	"fmt"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	"miniproject-alterra/module/dto"
@@ -76,6 +77,7 @@ func (this *EventController) CreateEvent(ctx echo.Context) error {
 
 	err = this.eventSvc.CreateEvent(userID, evtDTO, src)
 	if err != nil {
+		fmt.Println(err.Error())
 		return ctx.JSON(http.StatusInternalServerError, global_response.StandartResponse{
 			Message: "Server error.",
 		})
@@ -95,6 +97,7 @@ func (this *EventController) PublishEvent(ctx echo.Context) error {
 	err := this.eventSvc.PublishEvent(userId, eventId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when publish event."
 		errResStatus := http.StatusInternalServerError
@@ -129,6 +132,7 @@ func (this *EventController) TakedownEvent(ctx echo.Context) error {
 	err := this.eventSvc.TakedownEvent(userId, eventId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when takedown event."
 		errResStatus := http.StatusInternalServerError
@@ -159,6 +163,7 @@ func (this *EventController) GetEvent(ctx echo.Context) error {
 
 	evts, err := this.eventSvc.GetEvent()
 	if err != nil {
+		fmt.Println(err.Error())
 		return ctx.JSON(http.StatusInternalServerError, evt_response.GetEventResponse{
 			Message: "Error when get event.",
 		})
@@ -216,6 +221,7 @@ func (this *EventController) GetAllEvent(ctx echo.Context) error {
 	events, err := this.eventSvc.GetAllEvent(userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when get all event."
 		errResStatus := http.StatusInternalServerError
@@ -267,6 +273,8 @@ func (this *EventController) GetWaitingEvents(ctx echo.Context) error {
 	events, err := this.eventSvc.GetWaitingEvents(userId)
 
 	if err != nil {
+
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when get waiting events."
 		errResStatus := http.StatusInternalServerError
@@ -279,6 +287,7 @@ func (this *EventController) GetWaitingEvents(ctx echo.Context) error {
 		return ctx.JSON(errResStatus, evt_response.GetEventResponse{
 			Message: errResMessage,
 		})
+
 	}
 
 	var eventPresentations []evt_response.EventPresentation
@@ -342,6 +351,7 @@ func (this *EventController) UpdateEvent(ctx echo.Context) error {
 	err := this.eventSvc.UpdateEvent(userId, eventId, event)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when update event."
 		errResStatus := http.StatusInternalServerError
@@ -389,6 +399,7 @@ func (this *EventController) UpdateImage(ctx echo.Context) error {
 	err = this.eventSvc.UpdateImage(userId, eventId, file.Filename, src)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when update event image."
 		errResStatus := http.StatusInternalServerError
@@ -418,6 +429,7 @@ func (this *EventController) DeleteEvent(ctx echo.Context) error {
 	err := this.eventSvc.DeleteEvent(userId, eventId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when delete event."
 		errResStatus := http.StatusInternalServerError

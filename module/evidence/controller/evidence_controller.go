@@ -1,6 +1,7 @@
 package evd_controller
 
 import (
+	"fmt"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	"miniproject-alterra/module/dto"
@@ -68,6 +69,7 @@ func (this *EvidenceController) CreateEvidence(ctx echo.Context) error {
 	err = this.evdSvc.CreateEvidence(userId, req.EventId, src, evidence)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		err, ok := err.(*mysql.MySQLError)
 		if ok && err.Number == 1452 {
 			return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
@@ -98,6 +100,7 @@ func (this *EvidenceController) GetEvidences(ctx echo.Context) error {
 	evidences, err := this.evdSvc.GetEvidences(userId, eventId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when get evidences."
 		errResStatus := http.StatusInternalServerError
@@ -156,6 +159,7 @@ func (this *EvidenceController) UpdateEvidence(ctx echo.Context) error {
 	err := this.evdSvc.UpdateEvidence(userId, evidenceId, evidence)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when update evidence."
 		errResStatus := http.StatusInternalServerError
@@ -200,6 +204,7 @@ func (this *EvidenceController) UpdateImage(ctx echo.Context) error {
 	err = this.evdSvc.UpdateImage(userId, evidenceId, file.Filename, src)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when update image."
 		errResStatus := http.StatusInternalServerError
@@ -229,6 +234,7 @@ func (this *EvidenceController) DeleteEvidence(ctx echo.Context) error {
 	err := this.evdSvc.DeleteEvidence(userId, evidenceId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when delete evidence."
 		errResStatus := http.StatusInternalServerError
