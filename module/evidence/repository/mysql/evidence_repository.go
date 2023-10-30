@@ -37,7 +37,7 @@ func (this *EvidenceRepository) GetEvidences(eventId string) ([]dto.Evidence, er
 
 	var evidences []dto.Evidence
 
-	tx := this.db.Where("event_id = ?", eventId).Find(&evidences)
+	tx := this.db.Unscoped().Where("event_id = ?", eventId).Preload("User").Find(&evidences)
 	if tx.Error != nil {
 		return []dto.Evidence{}, tx.Error
 	}

@@ -119,7 +119,7 @@ func (this *UserService) RequestVerifyEmail(userId string) error {
 
 	emailData := global_entity.EmailDataFormat{
 		Name: user.Name,
-		URL:  fmt.Sprintf("http://%s/verify-email/%s", this.config.APP_URL, user.Id),
+		URL:  fmt.Sprintf("https://%s/users/verify-email/%s", this.config.APP_URL, user.Id),
 	}
 	htmlStr, err := lib.ParseTemplate("./app/lib/template/email.html", emailData)
 	if err != nil {
@@ -151,6 +151,15 @@ func (this *UserService) GetRequestingUser(userId string) ([]dto.User, error) {
 	users, err := this.userRepo.GetRequestingUser()
 	if err != nil {
 		return []dto.User{}, err
+	}
+
+	for i := range users {
+		if users[i].Photo.String != "" {
+			users[i].Photo.String, err = this.storageSvc.GetUrl("user-photo", users[i].Photo.String)
+			if err != nil {
+				return []dto.User{}, err
+			}
+		}
 	}
 
 	return users, nil
@@ -191,6 +200,15 @@ func (this *UserService) GetAllUser(userId string) ([]dto.User, error) {
 	users, err := this.userRepo.GetAllUser()
 	if err != nil {
 		return []dto.User{}, nil
+	}
+
+	for i := range users {
+		if users[i].Photo.String != "" {
+			users[i].Photo.String, err = this.storageSvc.GetUrl("user-photo", users[i].Photo.String)
+			if err != nil {
+				return []dto.User{}, err
+			}
+		}
 	}
 
 	return users, nil

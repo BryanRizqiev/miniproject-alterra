@@ -1,6 +1,7 @@
 package user_controller
 
 import (
+	"fmt"
 	"miniproject-alterra/app/lib"
 	"miniproject-alterra/app/validator"
 	"miniproject-alterra/module/dto"
@@ -70,6 +71,7 @@ func (this *UserController) Register(ctx echo.Context) error {
 	err := this.userService.Register(user)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		err, ok := err.(*mysql.MySQLError)
 		if ok && err.Number == 1062 {
 			return ctx.JSON(http.StatusBadRequest, global_response.StandartResponse{
@@ -110,6 +112,7 @@ func (this *UserController) Login(ctx echo.Context) error {
 	token, err := this.userService.Login(user)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 
 		if errMessage == "record not found" || errMessage == "credentials not valid" {
@@ -137,6 +140,7 @@ func (this *UserController) RequestVerified(ctx echo.Context) error {
 	err := this.userService.RequestVerified(userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when request verified."
 		errResStatus := http.StatusInternalServerError
@@ -170,12 +174,13 @@ func (this *UserController) VerifyEmail(ctx echo.Context) error {
 	err := this.userService.VerifyEmail(userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when verify email."
 		errResStatus := http.StatusInternalServerError
 
 		if errMessage == "user already verified" {
-			errResMessage = "User already verified."
+			errResMessage = "Email already verified."
 			errResStatus = http.StatusBadRequest
 		}
 
@@ -203,12 +208,13 @@ func (this *UserController) RequestVerifyEmail(ctx echo.Context) error {
 	err := this.userService.RequestVerifyEmail(userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when request verify email."
 		errResStatus := http.StatusInternalServerError
 
 		if errMessage == "user already verified" {
-			errResMessage = "User already verified."
+			errResMessage = "Email already verified."
 			errResStatus = http.StatusBadRequest
 		}
 
@@ -238,6 +244,7 @@ func (this *UserController) GetRequestingUser(ctx echo.Context) error {
 	users, err := this.userService.GetRequestingUser(userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when get requesting user."
 		errResStatus := http.StatusInternalServerError
@@ -296,6 +303,7 @@ func (this *UserController) ChangeUserRole(ctx echo.Context) error {
 	err := this.userService.ChangeUserRole(reqUserId, userId, req.Role)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when change user role."
 		errResStatus := http.StatusInternalServerError
@@ -328,6 +336,7 @@ func (this *UserController) GetAllUser(ctx echo.Context) error {
 	users, err := this.userService.GetAllUser(userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when get users."
 		errResStatus := http.StatusInternalServerError
@@ -413,6 +422,7 @@ func (this *UserController) UpdateUser(ctx echo.Context) error {
 	err := this.userService.UpdateUser(userId, user)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when update user."
 		errResStatus := http.StatusInternalServerError
@@ -442,6 +452,7 @@ func (this *UserController) DeleteUser(ctx echo.Context) error {
 	err := this.userService.DeleteUser(reqUserId, userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when delete user."
 		errResStatus := http.StatusInternalServerError
@@ -480,6 +491,7 @@ func (this *UserController) UserSelfDelete(ctx echo.Context) error {
 	err := this.userService.UserSelfDelete(userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when user self delete."
 		errResStatus := http.StatusInternalServerError
@@ -531,6 +543,7 @@ func (this *UserController) UpdatePhoto(ctx echo.Context) error {
 	err = this.userService.UpdatePhoto(userId, file.Filename, src)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when update user photo."
 		errResStatus := http.StatusInternalServerError
@@ -559,6 +572,7 @@ func (this *UserController) GetUserProfile(ctx echo.Context) error {
 	user, err := this.userService.GetUserProfile(userId)
 	if err != nil {
 
+		fmt.Println(err.Error())
 		errMessage := err.Error()
 		errResMessage := "Error when get user profile."
 		errResStatus := http.StatusInternalServerError
